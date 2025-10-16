@@ -1,4 +1,4 @@
-package Model;
+package com.example.Student.Life.Hub.Model;
 
 public abstract class User {
     private int ID;

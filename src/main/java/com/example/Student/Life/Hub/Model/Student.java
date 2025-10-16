@@ -1,4 +1,5 @@
-package Model;
+package com.example.Student.Life.Hub.Model;
+
 
 public class Student extends User{
     private String Major;
