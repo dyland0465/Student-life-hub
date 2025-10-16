@@ -1,3 +1,4 @@
+//I just shoved these into the project I don't know if we want to use a react frontend or something else
 import React, { Component } from "react";
 import Header from './Header';
 import Footer from './Footer';
