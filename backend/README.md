@@ -321,9 +321,4 @@ Update `frontend/src/lib/ai-service.ts` to call backend API instead of direct Op
 ### "Rate limit exceeded"
 - Wait for rate limit window to expire
 - Adjust limits in `.env` if needed for development
-
-## 📄 License
-
-MIT
-
 ---

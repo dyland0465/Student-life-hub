@@ -285,10 +285,6 @@ Contributions are welcome! Please:
 3. Make your changes
 4. Submit a pull request
 
-## 📄 License
-
-MIT License
-
 ## 👥 Team
 
 Created as part of SWENG411 course project by J.A.D.E.
@@ -297,4 +293,8 @@ Created as part of SWENG411 course project by J.A.D.E.
 
 - OpenAI API costs money (works in demo mode without key)
 - Firebase free tier limits (10GB storage, 50k reads/day)
+
+## 📄 License
+
+MIT License
 ---

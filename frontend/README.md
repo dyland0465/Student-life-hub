@@ -188,7 +188,3 @@ src/
 - Track sleep quality
 - View consistency metrics
 - AI sleep insights
-
-## License
-
-This project is part of the Student Life Hub application.
