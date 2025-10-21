@@ -11,10 +11,12 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Moon, Sun, LogOut, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { ProfileSettingsDialog } from '@/components/profile/ProfileSettingsDialog';
 
 export function Header() {
   const { currentUser, studentProfile, logout } = useAuth();
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
+  const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
 
   useEffect(() => {
     const isDark = document.documentElement.classList.contains('dark');
@@ -57,7 +59,9 @@ export function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="relative h-10 w-10 rounded-full">
               <Avatar>
-                <AvatarImage src={currentUser?.photoURL || undefined} />
+                <AvatarImage 
+                  src={currentUser?.photoURL || 'https://cdn.nba.com/headshots/nba/latest/1040x760/2544.png'} 
+                />
                 <AvatarFallback className="bg-primary text-primary-foreground">
                   {studentProfile?.name
                     ? getInitials(studentProfile.name)
@@ -83,7 +87,7 @@ export function Header() {
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setProfileSettingsOpen(true)}>
               <User className="mr-2 h-4 w-4" />
               Profile Settings
             </DropdownMenuItem>
@@ -95,6 +99,11 @@ export function Header() {
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
+      <ProfileSettingsDialog
+        open={profileSettingsOpen}
+        onOpenChange={setProfileSettingsOpen}
+      />
     </header>
   );
 }
