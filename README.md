@@ -6,7 +6,7 @@ A web application to help students manage their academic life, health, fitness, 
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.3-blue)
 ![Express](https://img.shields.io/badge/Express-4.18-green)
 ![Firebase](https://img.shields.io/badge/Firebase-12.0-orange)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--3.5-purple)
+![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5-purple)
 
 ## Features
 
