@@ -32,3 +32,12 @@ export const ezSolveLimiter = rateLimit({
   },
 });
 
+// Rate limiter for chat messages (prevent spam)
+export const chatLimiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // Max 10 messages per minute per IP
+  message: 'Too many chat messages. Please slow down.',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+

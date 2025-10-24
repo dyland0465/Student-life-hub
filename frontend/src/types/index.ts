@@ -99,3 +99,12 @@ export interface AIInsight {
   recommendations: string[];
 }
 
+// Chat types
+export interface ChatMessage {
+  id: string;
+  username: string;
+  content: string;
+  timestamp: string;
+  isModerated?: boolean;
+}
+

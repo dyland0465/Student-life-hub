@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 import { initializeFirebaseAdmin } from './config/firebase';
 import aiRoutes from './routes/ai';
 import healthRoutes from './routes/health';
+import chatRoutes from './routes/chat';
 import { errorHandler } from './middleware/errorHandler';
 
 // Load environment variables
@@ -30,6 +31,7 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/health', healthRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Root route
 app.get('/', (req, res) => {
@@ -43,6 +45,10 @@ app.get('/', (req, res) => {
         solveAssignment: 'POST /api/ai/solve-assignment',
         workoutRecommendations: 'POST /api/ai/workout-recommendations',
         sleepInsights: 'POST /api/ai/sleep-insights',
+      },
+      chat: {
+        getMessages: 'GET /api/chat/messages',
+        sendMessage: 'POST /api/chat/send',
       }
     }
   });

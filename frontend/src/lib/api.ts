@@ -96,5 +96,19 @@ export const api = {
     const response = await fetch(`${API_URL}/api/health`);
     return response.json();
   },
+
+  /**
+   * Chat functionality
+   */
+  async getChatMessages() {
+    return apiRequest('/api/chat/messages');
+  },
+
+  async sendChatMessage(content: string, username?: string) {
+    return apiRequest('/api/chat/send', {
+      method: 'POST',
+      body: JSON.stringify({ content, username }),
+    });
+  },
 };
 

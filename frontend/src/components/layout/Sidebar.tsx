@@ -6,6 +6,7 @@ import {
   Heart,
   Moon,
   Sparkles,
+  MessageCircle,
 } from 'lucide-react';
 
 const navigation = [
@@ -28,6 +29,11 @@ const navigation = [
     name: 'Sleep Schedule',
     href: '/sleep',
     icon: Moon,
+  },
+  {
+    name: 'Chat',
+    href: '/chat',
+    icon: MessageCircle,
   },
 ];
 

@@ -9,6 +9,7 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { CourseworkPage } from '@/pages/CourseworkPage';
 import { HealthPage } from '@/pages/HealthPage';
 import { SleepPage } from '@/pages/SleepPage';
+import { ChatPage } from '@/pages/ChatPage';
 
 function App() {
   return (
@@ -31,6 +32,7 @@ function App() {
             <Route path="coursework" element={<CourseworkPage />} />
             <Route path="health" element={<HealthPage />} />
             <Route path="sleep" element={<SleepPage />} />
+            <Route path="chat" element={<ChatPage />} />
           </Route>
 
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
