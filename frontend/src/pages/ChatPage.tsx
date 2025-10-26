@@ -25,6 +25,7 @@ export function ChatPage() {
   const [isSending, setIsSending] = useState(false);
   const [currentUsername, setCurrentUsername] = useState<string>('');
   const [chatDisplayName, setChatDisplayName] = useState<string>('');
+  const [isUsernameReady, setIsUsernameReady] = useState(false);
   
   // Dialog states
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -33,6 +34,7 @@ export function ChatPage() {
   const [selectedRoom, setSelectedRoom] = useState<ChatRoom | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messageInputRef = useRef<HTMLInputElement>(null);
   
   // Generate a consistent username for this session (for global chat)
   const getSessionUsername = () => {
@@ -41,13 +43,11 @@ export function ChatPage() {
     // Generate a username and store it in sessionStorage
     const storedUsername = sessionStorage.getItem('chatUsername');
     if (storedUsername) {
-      setCurrentUsername(storedUsername);
       return storedUsername;
     }
     
     const newUsername = `Student${Math.floor(Math.random() * 9999) + 1}`;
     sessionStorage.setItem('chatUsername', newUsername);
-    setCurrentUsername(newUsername);
     return newUsername;
   };
 
@@ -60,6 +60,13 @@ export function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
+  // Focus input after sending message
+  useEffect(() => {
+    if (!isSending && messageInputRef.current) {
+      messageInputRef.current.focus();
+    }
+  }, [isSending]);
+
   // Load user's chat rooms and profile on mount
   useEffect(() => {
     if (currentUser) {
@@ -67,6 +74,19 @@ export function ChatPage() {
       loadChatProfile();
     }
   }, [currentUser]);
+
+  // Initialize session username on mount to prevent flash
+  useEffect(() => {
+    const storedUsername = sessionStorage.getItem('chatUsername');
+    if (storedUsername) {
+      setCurrentUsername(storedUsername);
+    } else {
+      const newUsername = `Student${Math.floor(Math.random() * 9999) + 1}`;
+      sessionStorage.setItem('chatUsername', newUsername);
+      setCurrentUsername(newUsername);
+    }
+    setIsUsernameReady(true);
+  }, []);
 
   // Load messages when active room changes
   useEffect(() => {
@@ -143,7 +163,6 @@ export function ChatPage() {
     if (!newMessage.trim() || isSending || !currentUser) return;
 
     const messageText = newMessage.trim();
-    setNewMessage('');
     setIsSending(true);
 
     // Create optimistic message
@@ -158,8 +177,11 @@ export function ChatPage() {
       isModerated: false,
     };
 
-    // Add optimistic message immediately
+    // Add optimistic message
     setMessages(prev => [...prev, optimisticMessage]);
+    
+    // Clear input after adding optimistic message
+    setNewMessage('');
 
     try {
       let response;
@@ -204,12 +226,34 @@ export function ChatPage() {
   };
 
   const handleRoomCreated = (room: ChatRoom) => {
-    setRooms(prev => [...prev, room]);
+    setRooms(prev => {
+      // Check if room already exists (shouldn't happen for created rooms, but just in case)
+      const existingRoom = prev.find(r => r.id === room.id);
+      if (existingRoom) {
+        setActiveRoomId(room.id);
+        return prev;
+      }
+      return [...prev, room];
+    });
     setActiveRoomId(room.id);
   };
 
   const handleRoomJoined = (room: ChatRoom) => {
-    setRooms(prev => [...prev, room]);
+    setRooms(prev => {
+      // Check if room already exists
+      const existingRoom = prev.find(r => r.id === room.id);
+      if (existingRoom) {
+        // Room already exists, just switch to it
+        setActiveRoomId(room.id);
+        toast({
+          title: 'Already in room',
+          description: `You're already in "${room.name}". Switched to the room.`,
+        });
+        return prev;
+      }
+      // Room doesn't exist, add it
+      return [...prev, room];
+    });
     setActiveRoomId(room.id);
   };
 
@@ -251,7 +295,7 @@ export function ChatPage() {
   const currentRoom = getCurrentRoom();
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8rem)] -m-6">
+    <div className="flex flex-col h-full -mx-6 -mt-6 min-h-0 relative">
       <div className="flex items-start justify-between mb-6 px-6 pt-6 flex-shrink-0">
         <div className="flex flex-col gap-1">
           <h2 className="text-3xl font-bold tracking-tight">Chat</h2>
@@ -278,7 +322,7 @@ export function ChatPage() {
         )}
       </div>
 
-      <Card className="flex-1 flex flex-col mx-6 min-h-0">
+      <Card className="flex-1 flex flex-col mx-6 mb-2 min-h-0 flex-shrink" style={{ marginBottom: '40px' }}>
         <CardContent className="flex-1 flex flex-col p-0 min-h-0">
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 scrollbar-thin">
@@ -293,20 +337,30 @@ export function ChatPage() {
                   <p>No messages yet. Start the conversation!</p>
                 </div>
               </div>
+            ) : !isUsernameReady ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="text-muted-foreground">Loading...</div>
+              </div>
             ) : (
               messages.map((message) => {
+                // Pre-calculate session username
+                const sessionUsername = getSessionUsername();
+                
                 // For global chat, check by username since userId is anonymous
                 // For private chat, check by userId
                 const isOwnMessage = currentUser && (
                   activeRoomId === 'global' 
-                    ? message.username === getSessionUsername()
-                    : message.userId === currentUser.uid
+                    ? (sessionUsername && message.username === sessionUsername)
+                    : (message.userId && message.userId === currentUser.uid)
                 );
                 const isPending = message.id.startsWith('temp_');
+                
+                // Use a more stable key to prevent re-renders
+                const messageKey = `${message.id}-${isOwnMessage ? 'own' : 'other'}`;
                 return (
                   <div
-                    key={message.id}
-                    className={`flex items-start gap-2 py-1 px-2 hover:bg-muted/30 transition-colors ${
+                    key={messageKey}
+                    className={`flex items-start gap-2 py-1 px-2 hover:bg-muted/30 transition-all duration-200 ${
                       isOwnMessage ? 'flex-row-reverse' : 'flex-row'
                     } ${isPending ? 'opacity-70' : ''}`}
                   >
@@ -350,6 +404,7 @@ export function ChatPage() {
           <div className="border-t p-4 flex-shrink-0">
             <form onSubmit={sendMessage} className="flex gap-2">
               <Input
+                ref={messageInputRef}
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 placeholder="Type your message..."
@@ -376,7 +431,7 @@ export function ChatPage() {
       </Card>
 
       {/* Room Tabs */}
-      <div className="flex-shrink-0">
+      <div className="fixed bottom-0 left-64 right-0 z-10 bg-background border-t">
         <ChatRoomTabs
           rooms={rooms}
           activeRoomId={activeRoomId}
