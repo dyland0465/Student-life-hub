@@ -86,21 +86,21 @@ export function ChatPage() {
 
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex items-center gap-2 mb-6">
-        <MessageCircle className="h-6 w-6 text-primary" />
-        <h1 className="text-2xl font-bold">Student Chat</h1>
-        <Badge variant="secondary" className="ml-auto">
-          <Users className="h-3 w-3 mr-1" />
-          Anonymous
-        </Badge>
+    <div className="flex flex-col h-full -m-6">
+      <div className="flex items-start justify-between mb-6 px-6 pt-6">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-3xl font-bold tracking-tight">Chat</h2>
+          <p className="text-muted-foreground">
+            Chat with other students and get help with your coursework.
+          </p>
+        </div>
       </div>
 
-      <Card className="flex-1 flex flex-col">
+      <Card className="flex-1 flex flex-col mx-6">
         
         <CardContent className="flex-1 flex flex-col p-0">
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 max-h-[60vh]">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
             {isLoading ? (
               <div className="flex items-center justify-center h-32">
                 <div className="text-muted-foreground">Loading messages...</div>

@@ -1,6 +1,6 @@
 @echo off
 echo ================================================
-echo   Student Life Hub - Full Stack Startup
+echo   Student Life Hub - By Team J.A.D.E.
 echo ================================================
 echo.
 
@@ -41,5 +41,5 @@ start "Frontend" cmd /k "cd frontend && npm run dev"
 
 echo.
 echo Both servers are starting in separate windows!
-echo Close this window or press any key to continue...
-pause >nul
+echo Close this window in 5 seconds...
+timeout /t 5 /nobreak >nul
