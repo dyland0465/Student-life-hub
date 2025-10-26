@@ -32,7 +32,7 @@ import { doc, updateDoc, deleteDoc, collection, query, where, getDocs } from 'fi
 import { updateProfile, updatePassword, EmailAuthProvider, reauthenticateWithCredential, deleteUser } from 'firebase/auth';
 import { db } from '@/lib/firebase';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, User, Lock, Camera, Trash2, AlertTriangle, ChevronDown } from 'lucide-react';
+import { Loader2, User, Lock, Trash2, AlertTriangle, ChevronDown } from 'lucide-react';
 
 interface ProfileSettingsDialogProps {
   open: boolean;
