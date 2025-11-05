@@ -278,7 +278,7 @@ FRONTEND_URL=http://localhost:5173
 
 ## Contributing
 
-### This repo is for a course project, so contributions at this time will not be accepted. We intend to continue the project after the course is finished. Once finished, this message will be deleted and we will provide the updated guidelines.
+### This repo is for a course project, so contributions at this time will not be accepted. We intend to continue the project after the course is finished. Once finished, this message will be deleted and we will provide the updated guidelines in **[CONTRIBUTING](Contributing.md)**
 
 
 
