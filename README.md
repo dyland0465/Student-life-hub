@@ -79,7 +79,7 @@ A web application to help students manage their academic life, health, fitness, 
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/Student-life-hub.git
+git clone https://github.com/dyland0465/Student-life-hub.git
 cd Student-life-hub
 ```
 
@@ -278,12 +278,9 @@ FRONTEND_URL=http://localhost:5173
 
 ## Contributing
 
-Contributions are welcome! Please:
+### This repo is for a course project, so contributions at this time will not be accepted. We intend to continue the project after the course is finished. Once finished, this message will be deleted and we will provide the updated guidelines in **[CONTRIBUTING](Contributing.md)**
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Submit a pull request
+
 
 ## Team
 

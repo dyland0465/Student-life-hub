@@ -4,7 +4,7 @@ export function initializeFirebaseAdmin() {
   try {
     // Check if already initialized
     if (admin.apps.length > 0) {
-      console.log('✅ Firebase Admin already initialized');
+      console.log('Firebase Admin already initialized');
       return;
     }
 
@@ -13,8 +13,8 @@ export function initializeFirebaseAdmin() {
     const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
     if (!projectId || !clientEmail || !privateKey) {
-      console.warn('⚠️  Firebase Admin credentials not found. Running in demo mode.');
-      console.warn('   AI features will work with mock data only.');
+      console.warn('Firebase Admin credentials not found. Running in demo mode.');
+      console.warn('AI features will work with mock data only.');
       return;
     }
 
@@ -26,10 +26,10 @@ export function initializeFirebaseAdmin() {
       }),
     });
 
-    console.log('✅ Firebase Admin initialized successfully');
+    console.log('Firebase Admin initialized successfully');
   } catch (error) {
-    console.error('❌ Failed to initialize Firebase Admin:', error);
-    console.warn('   Running in demo mode. AI features will use mock data.');
+    console.error('Failed to initialize Firebase Admin:', error);
+    console.warn('Running in demo mode. AI features will use mock data.');
   }
 }
 
