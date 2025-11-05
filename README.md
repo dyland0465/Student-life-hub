@@ -79,7 +79,7 @@ A web application to help students manage their academic life, health, fitness, 
 ### 1. Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/Student-life-hub.git
+git clone https://github.com/dillydilly04/Student-life-hub.git
 cd Student-life-hub
 ```
 
