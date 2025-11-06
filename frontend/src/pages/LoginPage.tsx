@@ -71,7 +71,10 @@ export function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
-          <div className="flex items-center justify-center mb-4">
+          <div 
+            className="flex items-center justify-center mb-4 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={() => navigate('/')}
+          >
             <Sparkles className="h-12 w-12 text-primary" />
           </div>
           <CardTitle className="text-2xl text-center">Student Life Hub</CardTitle>

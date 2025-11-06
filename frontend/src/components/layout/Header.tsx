@@ -13,11 +13,15 @@ import {
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Moon, Sun, Monitor, LogOut, User } from 'lucide-react';
+import { Moon, Sun, Monitor, LogOut, User, Menu } from 'lucide-react';
 import { useState } from 'react';
 import { ProfileSettingsDialog } from '@/components/profile/ProfileSettingsDialog';
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   const { currentUser, studentProfile, logout } = useAuth();
   const { theme, setTheme, actualTheme } = useTheme();
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
@@ -32,9 +36,19 @@ export function Header() {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
+    <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
       <div className="flex items-center gap-4">
-        <h1 className="text-xl font-semibold">
+        {onMenuClick && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={onMenuClick}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
+        <h1 className="text-lg md:text-xl font-semibold">
           Welcome back, {studentProfile?.name?.split(' ')[0] || 'Student'}!
         </h1>
       </div>
