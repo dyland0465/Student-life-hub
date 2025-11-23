@@ -11,7 +11,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { aiService } from '@/lib/ai-service';
-import { EZSolveDialog } from './EZSolveDialog';
+import { EZSolveProgressModal, type EZSolveState } from './EZSolveProgressModal';
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -24,7 +24,9 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [ezSolveOpen, setEzSolveOpen] = useState(false);
+  const [ezSolveState, setEzSolveState] = useState<EZSolveState>('idle');
   const [aiSolution, setAiSolution] = useState<any>(null);
+  const [error, setError] = useState<string | undefined>();
 
   async function handleToggleComplete() {
     if (!currentUser) return;
@@ -75,15 +77,46 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
   }
 
   async function handleEZSolve() {
+    if (!currentUser) return;
+
+    setEzSolveOpen(true);
+    setError(undefined);
+    setEzSolveState('sending');
+
     try {
-      setLoading(true);
+      // State 1: Sending task to LLM model
+      setEzSolveState('sending');
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call delay
+
+      // State 2: Parsing best response from LLM
+      setEzSolveState('parsing');
       const solution = await aiService.solveAssignment(assignment);
+      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate parsing delay
+
       setAiSolution(solution);
-      setEzSolveOpen(true);
 
-      // Mark assignment as AI-solved
-      if (!currentUser) return;
+      // State 3: Awaiting user approval
+      setEzSolveState('awaiting_approval');
+    } catch (error: any) {
+      console.error('Error with EZSolve:', error);
+      setError(error.message || 'Failed to generate AI solution');
+      setEzSolveState('error');
+      toast({
+        title: 'Error',
+        description: 'Failed to generate AI solution',
+        variant: 'destructive',
+      });
+    }
+  }
 
+  async function handleApprove() {
+    if (!currentUser || !aiSolution) return;
+
+    try {
+      // State 4: Submitting assignment
+      setEzSolveState('submitting');
+
+      // Mark assignment as AI-solved and completed
       const coursesRef = collection(db, 'courses');
       const q = query(coursesRef, where('userId', '==', currentUser.uid));
       const snapshot = await getDocs(q);
@@ -95,6 +128,7 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
 
         if (assignmentIndex !== -1) {
           assignments[assignmentIndex].aiSolved = true;
+          assignments[assignmentIndex].status = 'completed';
           assignments[assignmentIndex].updatedAt = new Date();
 
           await updateDoc(doc(db, 'courses', courseDoc.id), {
@@ -102,20 +136,44 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
             updatedAt: new Date(),
           });
 
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate submission delay
+
+          // State 5: Done!
+          setEzSolveState('done');
           onUpdate();
+
+          toast({
+            title: 'Success',
+            description: 'Assignment has been completed!',
+          });
           break;
         }
       }
-    } catch (error) {
-      console.error('Error with EZSolve:', error);
+    } catch (error: any) {
+      console.error('Error submitting assignment:', error);
+      setError(error.message || 'Failed to submit assignment');
+      setEzSolveState('error');
       toast({
         title: 'Error',
-        description: 'Failed to generate AI solution',
+        description: 'Failed to submit assignment',
         variant: 'destructive',
       });
-    } finally {
-      setLoading(false);
     }
+  }
+
+  function handleReject() {
+    setEzSolveOpen(false);
+    setEzSolveState('idle');
+    setAiSolution(null);
+    setError(undefined);
+  }
+
+  function handleClose() {
+    setEzSolveOpen(false);
+    setEzSolveState('idle');
+    setAiSolution(null);
+    setError(undefined);
+    onUpdate();
   }
 
   const isOverdue = assignment.status === 'pending' && assignment.dueDate < new Date();
@@ -185,11 +243,16 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
         </CardContent>
       </Card>
 
-      <EZSolveDialog
+      <EZSolveProgressModal
         open={ezSolveOpen}
         onOpenChange={setEzSolveOpen}
         assignment={assignment}
+        state={ezSolveState}
         solution={aiSolution}
+        error={error}
+        onApprove={handleApprove}
+        onReject={handleReject}
+        onClose={handleClose}
       />
     </>
   );

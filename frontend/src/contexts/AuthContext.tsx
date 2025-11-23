@@ -11,6 +11,7 @@ import {
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, googleProvider, db } from '@/lib/firebase';
 import type { Student } from '@/types';
+import { detectError, determineErrorType, getErrorMessage } from '@/lib/errorDetection';
 
 interface AuthContextType {
   currentUser: FirebaseUser | null;
@@ -20,6 +21,7 @@ interface AuthContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
+  firebaseError: { type: string; message: string } | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -36,6 +38,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
   const [studentProfile, setStudentProfile] = useState<Student | null>(null);
   const [loading, setLoading] = useState(true);
+  const [firebaseError, setFirebaseError] = useState<{ type: string; message: string } | null>(null);
 
   async function register(
     email: string,
@@ -44,48 +47,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     major: string,
     year: number
   ) {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    const user = userCredential.user;
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
-    // Update display name
-    await updateProfile(user, { displayName: name });
+      // Update display name
+      await updateProfile(user, { displayName: name });
 
-    // Create student profile in Firestore
-    const studentData: Student = {
-      id: user.uid,
-      name,
-      email,
-      major,
-      year,
-    };
-
-    await setDoc(doc(db, 'users', user.uid), studentData);
-    setStudentProfile(studentData);
-  }
-
-  async function login(email: string, password: string) {
-    await signInWithEmailAndPassword(auth, email, password);
-  }
-
-  async function loginWithGoogle() {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-
-    // Check if user profile exists
-    const userDoc = await getDoc(doc(db, 'users', user.uid));
-    
-    if (!userDoc.exists()) {
-      // Create a basic profile for Google sign-in users
+      // Create student profile in Firestore
       const studentData: Student = {
         id: user.uid,
-        name: user.displayName || 'Student',
-        email: user.email || '',
-        major: 'Undeclared',
-        year: 1,
+        name,
+        email,
+        major,
+        year,
       };
 
       await setDoc(doc(db, 'users', user.uid), studentData);
       setStudentProfile(studentData);
+      setFirebaseError(null);
+    } catch (error) {
+      const errorType = determineErrorType(error);
+      const errorMessage = getErrorMessage(error);
+      setFirebaseError({ type: errorType, message: errorMessage });
+      throw error;
+    }
+  }
+
+  async function login(email: string, password: string) {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      setFirebaseError(null);
+    } catch (error) {
+      const errorType = determineErrorType(error);
+      const errorMessage = getErrorMessage(error);
+      setFirebaseError({ type: errorType, message: errorMessage });
+      throw error;
+    }
+  }
+
+  async function loginWithGoogle() {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+
+      // Check if user profile exists
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      
+      if (!userDoc.exists()) {
+        // Create a basic profile for Google sign-in users
+        const studentData: Student = {
+          id: user.uid,
+          name: user.displayName || 'Student',
+          email: user.email || '',
+          major: 'Undeclared',
+          year: 1,
+        };
+
+        await setDoc(doc(db, 'users', user.uid), studentData);
+        setStudentProfile(studentData);
+      }
+      setFirebaseError(null);
+    } catch (error) {
+      const errorType = determineErrorType(error);
+      const errorMessage = getErrorMessage(error);
+      setFirebaseError({ type: errorType, message: errorMessage });
+      throw error;
     }
   }
 
@@ -100,21 +127,51 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (userDoc.exists()) {
         setStudentProfile(userDoc.data() as Student);
       }
+      setFirebaseError(null);
     } catch (error) {
       console.error('Error loading student profile:', error);
+      const errorType = determineErrorType(error);
+      const errorMessage = getErrorMessage(error);
+      setFirebaseError({ type: errorType, message: errorMessage });
     }
   }
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      if (user) {
-        await loadStudentProfile(user.uid);
-      } else {
-        setStudentProfile(null);
+    // Check Firebase connection on mount
+    detectError().then((errorInfo) => {
+      if (errorInfo) {
+        setFirebaseError({ type: errorInfo.type, message: errorInfo.message });
+        setLoading(false);
+        return;
       }
-      setLoading(false);
     });
+
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (user) => {
+        try {
+          setCurrentUser(user);
+          if (user) {
+            await loadStudentProfile(user.uid);
+          } else {
+            setStudentProfile(null);
+          }
+          setFirebaseError(null);
+        } catch (error) {
+          const errorType = determineErrorType(error);
+          const errorMessage = getErrorMessage(error);
+          setFirebaseError({ type: errorType, message: errorMessage });
+        } finally {
+          setLoading(false);
+        }
+      },
+      (error) => {
+        const errorType = determineErrorType(error);
+        const errorMessage = getErrorMessage(error);
+        setFirebaseError({ type: errorType, message: errorMessage });
+        setLoading(false);
+      }
+    );
 
     return unsubscribe;
   }, []);
@@ -127,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     loginWithGoogle,
     logout,
     loading,
+    firebaseError,
   };
 
   return (
