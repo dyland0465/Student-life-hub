@@ -3,6 +3,9 @@ import { Progress } from '@/components/ui/progress';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { 
   Loader2, 
   CheckCircle2, 
@@ -11,8 +14,10 @@ import {
   CheckSquare, 
   Send,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  Settings
 } from 'lucide-react';
+import { useState } from 'react';
 import type { Assignment, AISolution } from '@/types';
 
 export type EZSolveState = 
@@ -24,6 +29,14 @@ export type EZSolveState =
   | 'done'
   | 'error';
 
+export interface EZSolveConfig {
+  llm: string;
+  gradeTarget: string;
+  waitTimeBeforeSubmission?: number; // in seconds, only for quizzes
+  temperature?: number;
+  maxTokens?: number;
+}
+
 interface EZSolveProgressModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -34,6 +47,7 @@ interface EZSolveProgressModalProps {
   onApprove: () => void;
   onReject: () => void;
   onClose: () => void;
+  onStart?: (config: EZSolveConfig) => void;
 }
 
 const stateConfig = {
@@ -101,10 +115,32 @@ export function EZSolveProgressModal({
   onApprove,
   onReject,
   onClose,
+  onStart,
 }: EZSolveProgressModalProps) {
   const config = stateConfig[state];
   const Icon = config.icon;
   const isSpinning = 'spinning' in config && config.spinning;
+
+  // Configuration state
+  const [ezSolveConfig, setEzSolveConfig] = useState<EZSolveConfig>({
+    llm: 'gpt-3.5-turbo',
+    gradeTarget: 'A',
+    waitTimeBeforeSubmission: 30,
+    temperature: 0.7,
+    maxTokens: 1000,
+  });
+
+  // Check if assignment is a quiz (case-insensitive check)
+  const isQuiz = assignment.title.toLowerCase().includes('quiz') || 
+                 assignment.description?.toLowerCase().includes('quiz') ||
+                 assignment.title.toLowerCase().includes('test') ||
+                 assignment.description?.toLowerCase().includes('test');
+
+  const handleStart = () => {
+    if (onStart) {
+      onStart(ezSolveConfig);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -118,8 +154,137 @@ export function EZSolveProgressModal({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Configuration Section (shown when idle) */}
+          {state === 'idle' && (
+            <Card className="border-primary/50">
+              <CardContent className="pt-6 space-y-4">
+                <div className="flex items-center gap-2 mb-4">
+                  <Settings className="h-5 w-5 text-primary" />
+                  <h3 className="font-semibold">EZSolve Configuration</h3>
+                </div>
+
+                <div className="space-y-4">
+                  {/* LLM Selection */}
+                  <div className="space-y-2">
+                    <Label htmlFor="llm-select">LLM Model</Label>
+                    <Select
+                      value={ezSolveConfig.llm}
+                      onValueChange={(value) => setEzSolveConfig({ ...ezSolveConfig, llm: value })}
+                    >
+                      <SelectTrigger id="llm-select">
+                        <SelectValue placeholder="Select LLM model" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast, Cost-effective)</SelectItem>
+                        <SelectItem value="gpt-4">GPT-4 (High Quality, Slower)</SelectItem>
+                        <SelectItem value="gpt-4-turbo">GPT-4 Turbo (Balanced)</SelectItem>
+                        <SelectItem value="gpt-4o">GPT-4o (Latest, Best Quality)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Grade Target */}
+                  <div className="space-y-2">
+                    <Label htmlFor="grade-select">Grade Target</Label>
+                    <Select
+                      value={ezSolveConfig.gradeTarget}
+                      onValueChange={(value) => setEzSolveConfig({ ...ezSolveConfig, gradeTarget: value })}
+                    >
+                      <SelectTrigger id="grade-select">
+                        <SelectValue placeholder="Select grade target" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="A">A (90-100%)</SelectItem>
+                        <SelectItem value="B">B (80-89%)</SelectItem>
+                        <SelectItem value="C">C (70-79%)</SelectItem>
+                        <SelectItem value="D">D (60-69%)</SelectItem>
+                        <SelectItem value="Pass">Pass (Minimum)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Wait Time Before Submission (only for quizzes) */}
+                  {isQuiz && (
+                    <div className="space-y-2">
+                      <Label htmlFor="wait-time">Random Wait Time Before Submission (seconds)</Label>
+                      <Input
+                        id="wait-time"
+                        type="number"
+                        min="0"
+                        max="300"
+                        value={ezSolveConfig.waitTimeBeforeSubmission || 30}
+                        onChange={(e) => setEzSolveConfig({ 
+                          ...ezSolveConfig, 
+                          waitTimeBeforeSubmission: parseInt(e.target.value) || 0 
+                        })}
+                        placeholder="30"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Random delay before auto-submitting quiz (0-300 seconds)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Advanced Options */}
+                  <div className="space-y-3 pt-2 border-t">
+                    <p className="text-sm font-medium text-muted-foreground">Advanced Options</p>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="temperature">Temperature (Creativity: 0.0-2.0)</Label>
+                      <Input
+                        id="temperature"
+                        type="number"
+                        min="0"
+                        max="2"
+                        step="0.1"
+                        value={ezSolveConfig.temperature || 0.7}
+                        onChange={(e) => setEzSolveConfig({ 
+                          ...ezSolveConfig, 
+                          temperature: parseFloat(e.target.value) || 0.7 
+                        })}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Lower = more focused, Higher = more creative
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="max-tokens">Max Tokens (Response Length)</Label>
+                      <Input
+                        id="max-tokens"
+                        type="number"
+                        min="100"
+                        max="4000"
+                        step="100"
+                        value={ezSolveConfig.maxTokens || 1000}
+                        onChange={(e) => setEzSolveConfig({ 
+                          ...ezSolveConfig, 
+                          maxTokens: parseInt(e.target.value) || 1000 
+                        })}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Maximum length of AI response (100-4000 tokens)
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Start Button */}
+                <Button
+                  onClick={handleStart}
+                  className="w-full"
+                  size="lg"
+                >
+                  <Sparkles className="mr-2 h-4 w-4" />
+                  Start EZSolve
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Progress Section */}
-          <div className="space-y-3">
+          {state !== 'idle' && (
+            <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <Icon
@@ -136,6 +301,7 @@ export function EZSolveProgressModal({
             </div>
             <Progress value={config.progress} className="h-2" />
           </div>
+          )}
 
           {/* Error Display */}
           {state === 'error' && error && (

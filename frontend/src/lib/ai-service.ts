@@ -1,31 +1,16 @@
 import type { Assignment, FitnessRoutine, SleepLog, AISolution, AIInsight } from '@/types';
+import type { EZSolveConfig } from '@/components/coursework/EZSolveProgressModal';
 import { api } from './api';
-
-/**
- * AI Service for Student Life Hub
- * This service provides AI-powered features including:
- * - EZSolve: Homework assistance
- * - Fitness recommendations
- * - Sleep pattern analysis
- * - Study schedule optimization
- * 
- * Now uses backend API for secure AI operations
- */
 
 class AIService {
 
-  /**
-   * EZSolve: Solves or provides guidance for assignments
-   * This is the flagship AI feature that helps students with homework
-   * Now calls backend API for secure AI processing
-   */
-  async solveAssignment(assignment: Assignment): Promise<AISolution> {
+  async solveAssignment(assignment: Assignment, config?: EZSolveConfig): Promise<AISolution> {
     try {
       const response = await api.solveAssignment({
         id: assignment.id,
         title: assignment.title,
         description: assignment.description,
-      });
+      }, config);
 
       return {
         assignmentId: response.solution.assignmentId,
@@ -41,10 +26,6 @@ class AIService {
     }
   }
 
-  /**
-   * Get AI-powered workout recommendations based on user profile
-   * Calls backend API for recommendations
-   */
   async getWorkoutRecommendations(userProfile: {
     fitnessLevel?: string;
     goals?: string[];
@@ -92,10 +73,6 @@ class AIService {
     ];
   }
 
-  /**
-   * Analyze sleep patterns and provide insights
-   * Calls backend API for AI-powered analysis
-   */
   async analyzeSleepPattern(sleepLogs: SleepLog[]): Promise<AIInsight> {
     if (sleepLogs.length === 0) {
       return {
@@ -134,9 +111,7 @@ class AIService {
     }
   }
 
-  /**
-   * Generate optimized study schedule based on courses and assignments
-   */
+
   async getStudySchedule(_courses: any[], assignments: Assignment[]): Promise<any> {
     // Placeholder for AI-powered study schedule
     const upcomingAssignments = assignments
@@ -179,7 +154,6 @@ class AIService {
     const variance = hours.reduce((sum, h) => sum + Math.pow(h - avg, 2), 0) / hours.length;
     const stdDev = Math.sqrt(variance);
     
-    // Convert to consistency percentage (lower stdDev = higher consistency)
     return Math.max(0, Math.min(100, 100 - (stdDev * 20)));
   }
 

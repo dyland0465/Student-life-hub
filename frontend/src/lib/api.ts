@@ -54,10 +54,16 @@ export const api = {
     id: string;
     title: string;
     description?: string;
+  }, config?: {
+    llm?: string;
+    gradeTarget?: string;
+    waitTimeBeforeSubmission?: number;
+    temperature?: number;
+    maxTokens?: number;
   }) {
     return apiRequest('/api/ai/solve-assignment', {
       method: 'POST',
-      body: JSON.stringify({ assignment }),
+      body: JSON.stringify({ assignment, config }),
     });
   },
 

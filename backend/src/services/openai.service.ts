@@ -19,6 +19,12 @@ class OpenAIService {
   async solveAssignment(assignment: {
     title: string;
     description?: string;
+  }, config?: {
+    llm?: string;
+    gradeTarget?: string;
+    waitTimeBeforeSubmission?: number;
+    temperature?: number;
+    maxTokens?: number;
   }): Promise<{
     solution: string;
     explanation: string;
@@ -26,14 +32,32 @@ class OpenAIService {
   }> {
     // If OpenAI not configured, return mock solution
     if (!this.isConfigured || !this.client) {
-      return this.getMockSolution(assignment);
+      return this.getMockSolution(assignment, config);
     }
 
     try {
+      // Use configured LLM model or default to gpt-3.5-turbo
+      const model = config?.llm || 'gpt-3.5-turbo';
+      const temperature = config?.temperature ?? 0.7;
+      const maxTokens = config?.maxTokens ?? 1000;
+      const gradeTarget = config?.gradeTarget || 'A';
+
+      // Build prompt with grade target consideration
+      const gradeContext = gradeTarget === 'A' 
+        ? 'Aim for excellence and thorough understanding.'
+        : gradeTarget === 'B'
+        ? 'Focus on solid understanding and correct application.'
+        : gradeTarget === 'C'
+        ? 'Ensure basic competency and correct approach.'
+        : 'Provide a clear, correct solution.';
+
       const prompt = `You are an AI tutor helping students understand their homework. Provide clear explanations, step-by-step solutions, and educational guidance. Always emphasize learning and understanding over just providing answers.
 
 Assignment: ${assignment.title}
 ${assignment.description ? `Description: ${assignment.description}` : ''}
+
+Grade Target: ${gradeTarget}
+${gradeContext}
 
 Please provide:
 1. A detailed explanation of the concept
@@ -43,7 +67,7 @@ Please provide:
 Remember to encourage academic integrity and understanding.`;
 
       const response = await this.client.chat.completions.create({
-        model: 'gpt-3.5-turbo',
+        model: model,
         messages: [
           {
             role: 'system',
@@ -54,22 +78,22 @@ Remember to encourage academic integrity and understanding.`;
             content: prompt,
           },
         ],
-        temperature: 0.7,
-        max_tokens: 1000,
+        temperature: temperature,
+        max_tokens: maxTokens,
       });
 
       const content = response.choices[0].message.content || '';
 
       return {
         solution: content,
-        explanation: 'AI-generated solution using GPT-3.5',
+        explanation: `AI-generated solution using ${model}`,
         steps: this.extractSteps(content),
       };
     } catch (error: any) {
       console.error('OpenAI API error:', error);
       
       // Return mock solution on error
-      return this.getMockSolution(assignment);
+      return this.getMockSolution(assignment, config);
     }
   }
 
@@ -177,10 +201,13 @@ Format as JSON: { "analysis": "...", "recommendations": ["...", "..."], "score":
   }
 
   // Helper methods for mock data
-  private getMockSolution(assignment: any) {
+  private getMockSolution(assignment: any, config?: any) {
+    const gradeTarget = config?.gradeTarget || 'A';
+    const model = config?.llm || 'gpt-3.5-turbo';
+    
     return {
-      solution: `Here's an AI-generated guide for "${assignment.title}":\n\n**Understanding the Problem:**\nBreak down the assignment into smaller, manageable parts. Identify the key concepts and requirements.\n\n**Research & Planning:**\nGather relevant information from your textbooks, lecture notes, and reliable online sources. Create an outline of your approach.\n\n**Step-by-Step Approach:**\n1. Review the relevant course material\n2. Identify the core concepts being tested\n3. Break down complex problems into simpler components\n4. Work through each component systematically\n5. Verify your understanding at each step\n\n**Tips for Success:**\n- Start early to give yourself time to think\n- Don't hesitate to ask your professor or TA for clarification\n- Study with classmates to gain different perspectives\n- Practice similar problems to reinforce your understanding\n\n**Academic Integrity Note:**\nUse this guide to understand the concepts and approach. Make sure to complete the work yourself and cite any sources you use.`,
-      explanation: 'Demo solution - Configure OpenAI API key for personalized AI assistance',
+      solution: `Here's an AI-generated guide for "${assignment.title}":\n\n**Understanding the Problem:**\nBreak down the assignment into smaller, manageable parts. Identify the key concepts and requirements.\n\n**Research & Planning:**\nGather relevant information from your textbooks, lecture notes, and reliable online sources. Create an outline of your approach.\n\n**Step-by-Step Approach:**\n1. Review the relevant course material\n2. Identify the core concepts being tested\n3. Break down complex problems into simpler components\n4. Work through each component systematically\n5. Verify your understanding at each step\n\n**Grade Target: ${gradeTarget}**\n${gradeTarget === 'A' ? 'Focus on thoroughness and excellence in your approach.' : gradeTarget === 'B' ? 'Ensure solid understanding and correct application.' : 'Ensure basic competency and correct approach.'}\n\n**Tips for Success:**\n- Start early to give yourself time to think\n- Don't hesitate to ask your professor or TA for clarification\n- Study with classmates to gain different perspectives\n- Practice similar problems to reinforce your understanding\n\n**Academic Integrity Note:**\nUse this guide to understand the concepts and approach. Make sure to complete the work yourself and cite any sources you use.`,
+      explanation: `Demo solution - Configure OpenAI API key for personalized AI assistance (Model: ${model})`,
       steps: [
         'Understand the requirements',
         'Break down the problem',

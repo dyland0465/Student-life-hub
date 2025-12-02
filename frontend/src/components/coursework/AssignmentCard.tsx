@@ -11,7 +11,7 @@ import { db } from '@/lib/firebase';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { aiService } from '@/lib/ai-service';
-import { EZSolveProgressModal, type EZSolveState } from './EZSolveProgressModal';
+import { EZSolveProgressModal, type EZSolveState, type EZSolveConfig } from './EZSolveProgressModal';
 
 interface AssignmentCardProps {
   assignment: Assignment;
@@ -76,10 +76,18 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
     }
   }
 
-  async function handleEZSolve() {
+  function handleEZSolve() {
     if (!currentUser) return;
 
     setEzSolveOpen(true);
+    setError(undefined);
+    setEzSolveState('idle'); // Start in idle state to show configuration
+    setAiSolution(null);
+  }
+
+  async function handleStartEZSolve(ezSolveConfig: EZSolveConfig) {
+    if (!currentUser) return;
+
     setError(undefined);
     setEzSolveState('sending');
 
@@ -90,10 +98,22 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
 
       // State 2: Parsing best response from LLM
       setEzSolveState('parsing');
-      const solution = await aiService.solveAssignment(assignment);
+      const solution = await aiService.solveAssignment(assignment, ezSolveConfig);
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate parsing delay
 
       setAiSolution(solution);
+
+      // If it's a quiz and wait time is configured, wait before showing approval
+      const isQuiz = assignment.title.toLowerCase().includes('quiz') || 
+                     assignment.description?.toLowerCase().includes('quiz') ||
+                     assignment.title.toLowerCase().includes('test') ||
+                     assignment.description?.toLowerCase().includes('test');
+      
+      if (isQuiz && ezSolveConfig.waitTimeBeforeSubmission && ezSolveConfig.waitTimeBeforeSubmission > 0) {
+        // Wait for the specified time (or random time if configured)
+        const waitTime = ezSolveConfig.waitTimeBeforeSubmission * 1000; // Convert to milliseconds
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+      }
 
       // State 3: Awaiting user approval
       setEzSolveState('awaiting_approval');
@@ -253,6 +273,7 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
         onApprove={handleApprove}
         onReject={handleReject}
         onClose={handleClose}
+        onStart={handleStartEZSolve}
       />
     </>
   );

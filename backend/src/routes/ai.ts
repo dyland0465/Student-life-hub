@@ -8,7 +8,7 @@ const router = express.Router();
 // EZSolve - Solve assignment with AI
 router.post('/solve-assignment', authenticateUser, ezSolveLimiter, async (req, res, next) => {
   try {
-    const { assignment } = req.body;
+    const { assignment, config } = req.body;
 
     if (!assignment || !assignment.title) {
       return res.status(400).json({ error: 'Assignment title is required' });
@@ -23,10 +23,23 @@ router.post('/solve-assignment', authenticateUser, ezSolveLimiter, async (req, r
       return res.status(400).json({ error: 'Description too long (max 2000 characters)' });
     }
 
+    // Validate config if provided
+    if (config) {
+      if (config.temperature !== undefined && (config.temperature < 0 || config.temperature > 2)) {
+        return res.status(400).json({ error: 'Temperature must be between 0 and 2' });
+      }
+      if (config.maxTokens !== undefined && (config.maxTokens < 100 || config.maxTokens > 4000)) {
+        return res.status(400).json({ error: 'Max tokens must be between 100 and 4000' });
+      }
+      if (config.waitTimeBeforeSubmission !== undefined && (config.waitTimeBeforeSubmission < 0 || config.waitTimeBeforeSubmission > 300)) {
+        return res.status(400).json({ error: 'Wait time must be between 0 and 300 seconds' });
+      }
+    }
+
     const solution = await openAIService.solveAssignment({
       title: assignment.title,
       description: assignment.description,
-    });
+    }, config);
 
     res.json({
       success: true,
