@@ -343,7 +343,7 @@ export function ChatPage() {
               </div>
             ) : (
               messages.map((message) => {
-                // Pre-calculate session username
+
                 const sessionUsername = getSessionUsername();
                 
                 // For global chat, check by username since userId is anonymous

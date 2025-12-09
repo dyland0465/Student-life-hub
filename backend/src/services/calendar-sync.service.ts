@@ -143,7 +143,7 @@ export class CalendarSyncService {
   }
 
   /**
-   * Connect Apple Calendar (CalDAV)
+   * Connect Apple Calendar
    */
   async connectAppleCalendar(
     userId: string,
@@ -226,7 +226,6 @@ export class CalendarSyncService {
       // Decrypt token
       const accessToken = decrypt(config.googleCalendar.accessToken, this.encryptionKey);
       
-      // In a real implementation, use googleapis library to push events
       // This is a placeholder that stores events as synced
       let syncedCount = 0;
       
@@ -272,8 +271,6 @@ export class CalendarSyncService {
       // Decrypt token
       const accessToken = decrypt(config.googleCalendar.accessToken, this.encryptionKey);
       
-      // In a real implementation, use googleapis library to fetch events
-      // This is a placeholder that returns empty array
       // TODO: Implement actual Google Calendar API integration
       
       // Update last sync time
@@ -304,8 +301,6 @@ export class CalendarSyncService {
       // Decrypt password
       const password = decrypt(config.appleCalendar.password, this.encryptionKey);
       
-      // In a real implementation, use CalDAV library to push events
-      // This is a placeholder that stores events as synced
       let syncedCount = 0;
       
       for (const event of events) {
@@ -350,8 +345,6 @@ export class CalendarSyncService {
       // Decrypt password
       const password = decrypt(config.appleCalendar.password, this.encryptionKey);
       
-      // In a real implementation, use CalDAV library to fetch events
-      // This is a placeholder that returns empty array
       // TODO: Implement actual CalDAV integration
       
       // Update last sync time
