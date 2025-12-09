@@ -35,8 +35,8 @@ export type EZSolveState =
 export interface EZSolveConfig {
   llm: string;
   gradeTarget: string;
-  waitTimeBeforeSubmission?: number; // in seconds, only for quizzes
-  quizPassword?: string; // password/code for password-protected quizzes
+  waitTimeBeforeSubmission?: number;
+  quizPassword?: string;
   temperature?: number;
   maxTokens?: number;
 }
@@ -149,8 +149,25 @@ export function EZSolveProgressModal({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog 
+      open={open} 
+      onOpenChange={onOpenChange}
+    >
+      <DialogContent 
+        className={`max-w-2xl max-h-[90vh] overflow-y-auto ${state === 'done' ? '[&>button]:hidden' : ''}`}
+        onInteractOutside={(e) => {
+          // Prevent closing by clicking outside when in 'done' state
+          if (state === 'done') {
+            e.preventDefault();
+          }
+        }}
+        onEscapeKeyDown={(e) => {
+          // Prevent closing with Escape key when in 'done' state
+          if (state === 'done') {
+            e.preventDefault();
+          }
+        }}
+      >
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -383,16 +400,19 @@ export function EZSolveProgressModal({
             <Card className="border-green-500/50 bg-green-50 dark:bg-green-950">
               <CardContent className="pt-6">
                 <div className="text-center space-y-4">
-                  <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto" />
+                  <CheckCircle2 className="h-12 w-12 text-green-600 dark:text-green-400 mx-auto animate-in zoom-in duration-300" />
                   <div>
                     <p className="font-semibold text-lg">Assignment Completed!</p>
                     <p className="text-sm text-muted-foreground mt-1">
                       "{assignment.title}" has been marked as completed.
                     </p>
                   </div>
-                  <Button onClick={onClose} className="w-full">
-                    Close
-                  </Button>
+                  <div className="pt-2">
+                    <Button onClick={onClose} className="w-full" size="lg">
+                      Close
+                    </Button>
+
+                  </div>
                 </div>
               </CardContent>
             </Card>

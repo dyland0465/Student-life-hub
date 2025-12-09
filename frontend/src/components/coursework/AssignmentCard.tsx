@@ -160,7 +160,8 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
 
           // State 5: Done!
           setEzSolveState('done');
-          onUpdate();
+          // Don't call onUpdate() here - let it be called when user closes the modal
+          // This prevents the modal from auto-closing due to re-renders
 
           toast({
             title: 'Success',
@@ -193,6 +194,8 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
     setEzSolveState('idle');
     setAiSolution(null);
     setError(undefined);
+    // Update the parent component when modal is closed
+    // This ensures the assignment list is refreshed after completion
     onUpdate();
   }
 
@@ -265,7 +268,13 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
 
       <EZSolveProgressModal
         open={ezSolveOpen}
-        onOpenChange={setEzSolveOpen}
+        onOpenChange={(newOpen) => {
+          // Prevent closing when in 'done' state - only allow closing via Close button
+          if (!newOpen && ezSolveState === 'done') {
+            return; // Don't close if trying to close and state is 'done'
+          }
+          setEzSolveOpen(newOpen);
+        }}
         assignment={assignment}
         state={ezSolveState}
         solution={aiSolution}
