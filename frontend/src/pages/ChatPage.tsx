@@ -301,7 +301,7 @@ export function ChatPage() {
           <h2 className="text-3xl font-bold tracking-tight">Chat</h2>
           <p className="text-muted-foreground">
             {currentRoom?.type === 'global' 
-              ? 'Chat with other students and get help with your coursework.'
+              ? 'Chat with other students.'
               : `Private room: ${currentRoom?.name}`
             }
           </p>
@@ -431,7 +431,7 @@ export function ChatPage() {
       </Card>
 
       {/* Room Tabs */}
-      <div className="fixed bottom-0 left-64 right-0 z-10 bg-background border-t">
+      <div className="fixed bottom-0 left-0 md:left-64 right-0 z-10 bg-background border-t">
         <ChatRoomTabs
           rooms={rooms}
           activeRoomId={activeRoomId}

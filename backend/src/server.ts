@@ -8,7 +8,10 @@ import { initializeChatService } from './routes/chat';
 import aiRoutes from './routes/ai';
 import healthRoutes from './routes/health';
 import chatRoutes from './routes/chat';
+import scheduleRoutes from './routes/schedule';
+import calendarRoutes from './routes/calendar';
 import { errorHandler } from './middleware/errorHandler';
+import { registrationQueueService } from './services/registration-queue.service';
 
 // Load environment variables
 dotenv.config();
@@ -39,6 +42,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/health', healthRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/schedule', scheduleRoutes);
+app.use('/api/calendar', calendarRoutes);
+
+// Start registration queue processing
+registrationQueueService.startProcessing(60000); // Process every minute
 
 // Root route
 app.get('/', (req, res) => {

@@ -16,6 +16,8 @@ import { MealPage } from '@/pages/MealPage';
 import { ShoppingListPage } from '@/pages/ShoppingListPage';
 import { SleepPage } from '@/pages/SleepPage';
 import { ChatPage } from '@/pages/ChatPage';
+import { ScheduleBuilderPage } from '@/pages/ScheduleBuilderPage';
+import { CalendarPage } from '@/pages/CalendarPage';
 import { ErrorPage } from '@/pages/ErrorPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -45,7 +47,10 @@ function App() {
                 <Route path="/health/workout" element={<WorkoutPage />} />
                 <Route path="/health/meal" element={<MealPage />} />
                 <Route path="/health/shopping" element={<ShoppingListPage />} />
-                <Route path="/sleep" element={<SleepPage />} />
+                <Route path="/health/sleep" element={<SleepPage />} />
+                <Route path="/sleep" element={<Navigate to="/health/sleep" replace />} />
+                <Route path="/schedule" element={<ScheduleBuilderPage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/chat" element={<ChatPage />} />
               </Route>
 

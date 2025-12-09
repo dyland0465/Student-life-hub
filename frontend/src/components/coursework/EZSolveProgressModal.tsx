@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { 
   Loader2, 
   CheckCircle2, 
@@ -15,7 +16,9 @@ import {
   Send,
   Sparkles,
   AlertTriangle,
-  Settings
+  Settings,
+  ChevronDown,
+  ChevronRight
 } from 'lucide-react';
 import { useState } from 'react';
 import type { Assignment, AISolution } from '@/types';
@@ -33,6 +36,7 @@ export interface EZSolveConfig {
   llm: string;
   gradeTarget: string;
   waitTimeBeforeSubmission?: number; // in seconds, only for quizzes
+  quizPassword?: string; // password/code for password-protected quizzes
   temperature?: number;
   maxTokens?: number;
 }
@@ -123,12 +127,14 @@ export function EZSolveProgressModal({
 
   // Configuration state
   const [ezSolveConfig, setEzSolveConfig] = useState<EZSolveConfig>({
-    llm: 'gpt-3.5-turbo',
+    llm: 'gemini-fast',
     gradeTarget: 'A',
     waitTimeBeforeSubmission: 30,
+    quizPassword: '',
     temperature: 0.7,
     maxTokens: 1000,
   });
+  const [configOpen, setConfigOpen] = useState(false);
 
   // Check if assignment is a quiz (case-insensitive check)
   const isQuiz = assignment.title.toLowerCase().includes('quiz') || 
@@ -148,138 +154,132 @@ export function EZSolveProgressModal({
         <DialogHeader>
           <div className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            <DialogTitle>EZSolve Automation</DialogTitle>
-            <Badge variant="secondary" className="ml-auto">AI Powered</Badge>
+            <DialogTitle>EZSolve</DialogTitle>
           </div>
         </DialogHeader>
 
         <div className="space-y-6">
           {/* Configuration Section (shown when idle) */}
           {state === 'idle' && (
-            <Card className="border-primary/50">
-              <CardContent className="pt-6 space-y-4">
-                <div className="flex items-center gap-2 mb-4">
-                  <Settings className="h-5 w-5 text-primary" />
-                  <h3 className="font-semibold">EZSolve Configuration</h3>
-                </div>
-
-                <div className="space-y-4">
-                  {/* LLM Selection */}
-                  <div className="space-y-2">
-                    <Label htmlFor="llm-select">LLM Model</Label>
-                    <Select
-                      value={ezSolveConfig.llm}
-                      onValueChange={(value) => setEzSolveConfig({ ...ezSolveConfig, llm: value })}
-                    >
-                      <SelectTrigger id="llm-select">
-                        <SelectValue placeholder="Select LLM model" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="gpt-3.5-turbo">GPT-3.5 Turbo (Fast, Cost-effective)</SelectItem>
-                        <SelectItem value="gpt-4">GPT-4 (High Quality, Slower)</SelectItem>
-                        <SelectItem value="gpt-4-turbo">GPT-4 Turbo (Balanced)</SelectItem>
-                        <SelectItem value="gpt-4o">GPT-4o (Latest, Best Quality)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Grade Target */}
-                  <div className="space-y-2">
-                    <Label htmlFor="grade-select">Grade Target</Label>
-                    <Select
-                      value={ezSolveConfig.gradeTarget}
-                      onValueChange={(value) => setEzSolveConfig({ ...ezSolveConfig, gradeTarget: value })}
-                    >
-                      <SelectTrigger id="grade-select">
-                        <SelectValue placeholder="Select grade target" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="A">A (90-100%)</SelectItem>
-                        <SelectItem value="B">B (80-89%)</SelectItem>
-                        <SelectItem value="C">C (70-79%)</SelectItem>
-                        <SelectItem value="D">D (60-69%)</SelectItem>
-                        <SelectItem value="Pass">Pass (Minimum)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {/* Wait Time Before Submission (only for quizzes) */}
-                  {isQuiz && (
+            <>
+              <Card className="border-primary/50">
+                <CardContent className="pt-6">
+                  <Collapsible open={configOpen} onOpenChange={setConfigOpen}>
+                    <CollapsibleTrigger className="w-full">
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                          <Settings className="h-5 w-5 text-primary" />
+                          <h3 className="font-semibold">Configuration</h3>
+                        </div>
+                        {configOpen ? (
+                          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="space-y-4 pt-4">
+                    {/* LLM Selection */}
                     <div className="space-y-2">
-                      <Label htmlFor="wait-time">Random Wait Time Before Submission (seconds)</Label>
-                      <Input
-                        id="wait-time"
-                        type="number"
-                        min="0"
-                        max="300"
-                        value={ezSolveConfig.waitTimeBeforeSubmission || 30}
-                        onChange={(e) => setEzSolveConfig({ 
-                          ...ezSolveConfig, 
-                          waitTimeBeforeSubmission: parseInt(e.target.value) || 0 
-                        })}
-                        placeholder="30"
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Random delay before auto-submitting quiz (0-300 seconds)
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Advanced Options */}
-                  <div className="space-y-3 pt-2 border-t">
-                    <p className="text-sm font-medium text-muted-foreground">Advanced Options</p>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="temperature">Temperature (Creativity: 0.0-2.0)</Label>
-                      <Input
-                        id="temperature"
-                        type="number"
-                        min="0"
-                        max="2"
-                        step="0.1"
-                        value={ezSolveConfig.temperature || 0.7}
-                        onChange={(e) => setEzSolveConfig({ 
-                          ...ezSolveConfig, 
-                          temperature: parseFloat(e.target.value) || 0.7 
-                        })}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Lower = more focused, Higher = more creative
-                      </p>
+                      <Label htmlFor="llm-select">Model</Label>
+                      <Select
+                        value={ezSolveConfig.llm}
+                        onValueChange={(value) => setEzSolveConfig({ ...ezSolveConfig, llm: value })}
+                      >
+                        <SelectTrigger id="llm-select">
+                          <SelectValue placeholder="Select LLM model" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {/* OpenAI GPT Models */}
+                          <SelectItem value="gpt-4o">GPT-4o (Balanced)</SelectItem>
+                          <SelectItem value="gpt-5-1">GPT-5.1 (Latest, Best Quality)</SelectItem>
+                          {/* Anthropic Claude Models */}
+                          <SelectItem value="claude-4-5-haiku">Claude 4.5 Haiku (Fast, Cost-effective)</SelectItem>
+                          <SelectItem value="claude-4-5-sonnet">Claude 4.5 Sonnet (Balanced)</SelectItem>
+                          <SelectItem value="claude-4-5-opus">Claude 4.5 Opus (Latest, Best Quality)</SelectItem>
+                          {/* Google Gemini Models */}
+                          <SelectItem value="gemini-fast">Gemini Fast (Balanced)</SelectItem>
+                          <SelectItem value="gemini-3-pro">Gemini 3 Pro (Latest, Best Quality)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
 
+                    {/* Grade Target */}
                     <div className="space-y-2">
-                      <Label htmlFor="max-tokens">Max Tokens (Response Length)</Label>
-                      <Input
-                        id="max-tokens"
-                        type="number"
-                        min="100"
-                        max="4000"
-                        step="100"
-                        value={ezSolveConfig.maxTokens || 1000}
-                        onChange={(e) => setEzSolveConfig({ 
-                          ...ezSolveConfig, 
-                          maxTokens: parseInt(e.target.value) || 1000 
-                        })}
-                      />
-                      <p className="text-xs text-muted-foreground">
-                        Maximum length of AI response (100-4000 tokens)
-                      </p>
+                      <Label htmlFor="grade-select">Grade Target</Label>
+                      <Select
+                        value={ezSolveConfig.gradeTarget}
+                        onValueChange={(value) => setEzSolveConfig({ ...ezSolveConfig, gradeTarget: value })}
+                      >
+                        <SelectTrigger id="grade-select">
+                          <SelectValue placeholder="Select grade target" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="A">A (90-100%)</SelectItem>
+                          <SelectItem value="B">B (80-89%)</SelectItem>
+                          <SelectItem value="C">C (70-79%)</SelectItem>
+                          <SelectItem value="D">D (60-69%)</SelectItem>
+                          <SelectItem value="Pass">Pass (Minimum)</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  </div>
-                </div>
 
-                {/* Start Button */}
-                <Button
-                  onClick={handleStart}
-                  className="w-full"
-                  size="lg"
-                >
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  Start EZSolve
-                </Button>
-              </CardContent>
-            </Card>
+                    {/* Wait Time Before Submission (only for quizzes) */}
+                    {isQuiz && (
+                      <div className="space-y-2">
+                        <Label htmlFor="wait-time">Random Wait Time Before Submission (seconds)</Label>
+                        <Input
+                          id="wait-time"
+                          type="number"
+                          min="0"
+                          max="300"
+                          value={ezSolveConfig.waitTimeBeforeSubmission || 30}
+                          onChange={(e) => setEzSolveConfig({ 
+                            ...ezSolveConfig, 
+                            waitTimeBeforeSubmission: parseInt(e.target.value) || 0 
+                          })}
+                          placeholder="30"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Random delay before auto-submitting quiz (0-300 seconds)
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Quiz Password (only for quizzes) */}
+                    {isQuiz && (
+                      <div className="space-y-2">
+                        <Label htmlFor="quiz-password">Quiz Password/Code (if required)</Label>
+                        <Input
+                          id="quiz-password"
+                          type="password"
+                          value={ezSolveConfig.quizPassword || ''}
+                          onChange={(e) => setEzSolveConfig({ 
+                            ...ezSolveConfig, 
+                            quizPassword: e.target.value 
+                          })}
+                          placeholder="Enter quiz password or code"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          Enter the password or access code if the quiz requires one
+                        </p>
+                      </div>
+                    )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                </CardContent>
+              </Card>
+
+              {/* Start Button */}
+              <Button
+                onClick={handleStart}
+                className="w-full"
+                size="lg"
+              >
+                <Sparkles className="mr-2 h-4 w-4" />
+                Start EZSolve
+              </Button>
+            </>
           )}
 
           {/* Progress Section */}

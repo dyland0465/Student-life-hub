@@ -306,7 +306,7 @@ export function RoomSettingsDialog({
           </div>
         </div>
 
-        <DialogFooter className="flex justify-end gap-2">
+        <DialogFooter className="gap-2">
           <Button
             type="button"
             variant="outline"

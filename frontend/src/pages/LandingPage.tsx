@@ -94,14 +94,14 @@ export function LandingPage() {
     },
     {
       name: 'Pro',
-      price: '$10',
+      price: '$4.99',
       frequency: 'per month',
       description: 'Unlock advanced insights and automation for your routines.',
       highlight: true,
       features: [
         'Everything in Free',
         'Smart scheduling suggestions',
-        'Advanced wellness analytics',
+        'Increased EZSolve limit',
         'Priority support',
       ],
     },

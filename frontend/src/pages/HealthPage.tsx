@@ -177,17 +177,17 @@ export function HealthPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Health & Fitness</h2>
           <p className="text-muted-foreground">Track your workouts and fitness goals</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setRoutineDialogOpen(true)} variant="outline">
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setRoutineDialogOpen(true)} variant="outline" className="flex-1 sm:flex-initial">
             <Plus className="mr-2 h-4 w-4" />
             New Routine
           </Button>
-          <Button onClick={() => setWorkoutDialogOpen(true)}>
+          <Button onClick={() => setWorkoutDialogOpen(true)} className="flex-1 sm:flex-initial">
             <Plus className="mr-2 h-4 w-4" />
             Log Workout
           </Button>
@@ -274,7 +274,7 @@ export function HealthPage() {
 
       {/* Tabs for Routines, Workout History, Meals, and Shopping Lists */}
       <Tabs defaultValue="history" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
           <TabsTrigger value="history">Workout History</TabsTrigger>
           <TabsTrigger value="routines">My Routines</TabsTrigger>
           <TabsTrigger value="meals">Meals</TabsTrigger>
@@ -357,12 +357,12 @@ export function HealthPage() {
         <TabsContent value="meals" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <CardTitle>Meal Tracking</CardTitle>
                   <CardDescription>Log your daily meals and track nutrition</CardDescription>
                 </div>
-                <Button onClick={() => setMealDialogOpen(true)}>
+                <Button onClick={() => setMealDialogOpen(true)} className="w-full sm:w-auto">
                   <Plus className="mr-2 h-4 w-4" />
                   Log Meal
                 </Button>
@@ -413,7 +413,7 @@ export function HealthPage() {
               {/* AI Meal Recommendations */}
               <Card className="mb-6">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
@@ -426,6 +426,7 @@ export function HealthPage() {
                       size="sm"
                       onClick={loadMealRecommendations}
                       disabled={loadingRecommendations}
+                      className="w-full sm:w-auto"
                     >
                       {loadingRecommendations ? 'Loading...' : 'Get Recommendations'}
                     </Button>
@@ -514,12 +515,12 @@ export function HealthPage() {
         <TabsContent value="shopping" className="space-y-4">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                   <CardTitle>Shopping Lists</CardTitle>
                   <CardDescription>Manage your shopping lists</CardDescription>
                 </div>
-                <Button onClick={() => setShoppingListDialogOpen(true)}>
+                <Button onClick={() => setShoppingListDialogOpen(true)} className="w-full sm:w-auto">
                   <Plus className="mr-2 h-4 w-4" />
                   New List
                 </Button>
@@ -529,7 +530,7 @@ export function HealthPage() {
               {/* AI Shopping List Suggestions */}
               <Card className="mb-6">
                 <CardHeader>
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                       <CardTitle className="flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-primary" />
@@ -542,6 +543,7 @@ export function HealthPage() {
                       size="sm"
                       onClick={loadShoppingSuggestions}
                       disabled={loadingSuggestions}
+                      className="w-full sm:w-auto"
                     >
                       {loadingSuggestions ? 'Loading...' : 'Get Suggestions'}
                     </Button>

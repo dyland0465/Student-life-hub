@@ -6,7 +6,7 @@
  * - Google Classroom
  * - Moodle
  * 
- * TODO: Add real API integrations when Canvas API tokens are available
+ * TODO: Add real API integrations
  */
 
 export type LMSProvider = 'canvas' | 'blackboard' | 'google-classroom' | 'moodle' | 'manual';
@@ -30,8 +30,6 @@ export interface ImportedAssignment {
 class ImportService {
   /**
    * Mock Canvas API import
-   * In production, this would use the Canvas REST API
-   * https://canvas.instructure.com/doc/api/
    */
   async importFromCanvas(apiToken: string): Promise<ImportedCourse[]> {
     // Simulate API call delay
@@ -89,10 +87,10 @@ class ImportService {
   private getMockCanvasCourses(): ImportedCourse[] {
     return [
       {
-        courseId: 'CS101',
+        courseId: 'CMPSC 121',
         courseName: 'Introduction to Computer Science',
         instructor: 'Dr. Smith',
-        term: 'Fall 2024',
+        term: 'Fall 2025',
         assignments: [
           {
             title: 'Programming Assignment 1: Variables and Data Types',
@@ -116,10 +114,10 @@ class ImportService {
         ],
       },
       {
-        courseId: 'MATH201',
+        courseId: 'MATH141',
         courseName: 'Calculus II',
         instructor: 'Prof. Johnson',
-        term: 'Fall 2024',
+        term: 'Fall 2025',
         assignments: [
           {
             title: 'Homework Set 3: Integration Techniques',
@@ -135,10 +133,10 @@ class ImportService {
         ],
       },
       {
-        courseId: 'ENG102',
-        courseName: 'English Composition',
+        courseId: 'ENGL 15',
+        courseName: 'Rhetoric and Composition',
         instructor: 'Dr. Williams',
-        term: 'Fall 2024',
+        term: 'Fall 2025',
         assignments: [
           {
             title: 'Essay 1: Rhetorical Analysis',
@@ -160,10 +158,10 @@ class ImportService {
   private getMockBlackboardCourses(): ImportedCourse[] {
     return [
       {
-        courseId: 'PHYS101',
-        courseName: 'General Physics I',
+        courseId: 'PHYS 211',
+        courseName: 'Mechanics',
         instructor: 'Dr. Anderson',
-        term: 'Fall 2024',
+        term: 'Fall 2025',
         assignments: [
           {
             title: 'Lab Report 1: Motion and Forces',
@@ -178,10 +176,10 @@ class ImportService {
         ],
       },
       {
-        courseId: 'CHEM101',
-        courseName: 'General Chemistry',
+        courseId: 'CHEM 110',
+        courseName: 'Chemical Principles I',
         instructor: 'Prof. Martinez',
-        term: 'Fall 2024',
+        term: 'Fall 2025',
         assignments: [
           {
             title: 'Chapter 3 Homework',
@@ -196,10 +194,10 @@ class ImportService {
   private getMockGoogleClassroomCourses(): ImportedCourse[] {
     return [
       {
-        courseId: 'HIST201',
-        courseName: 'American History',
+        courseId: 'HIST 101',
+        courseName: 'The Roman Republic and Empire',
         instructor: 'Ms. Thompson',
-        term: 'Fall 2024',
+        term: 'Fall 2025',
         assignments: [
           {
             title: 'Reading Response: Chapter 5',
@@ -220,10 +218,10 @@ class ImportService {
   private getMockMoodleCourses(): ImportedCourse[] {
     return [
       {
-        courseId: 'BIO101',
+        courseId: 'BIOL 110',
         courseName: 'Introduction to Biology',
         instructor: 'Dr. Garcia',
-        term: 'Fall 2024',
+        term: 'Fall 2025',
         assignments: [
           {
             title: 'Lab 1: Cell Structure',

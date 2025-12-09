@@ -87,17 +87,17 @@ export function SleepPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Sleep Schedule</h2>
           <p className="text-muted-foreground">Track and optimize your sleep patterns</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setScheduleDialogOpen(true)} variant="outline">
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setScheduleDialogOpen(true)} variant="outline" className="flex-1 sm:flex-initial">
             <Moon className="mr-2 h-4 w-4" />
             {sleepSchedule ? 'Update Schedule' : 'Set Schedule'}
           </Button>
-          <Button onClick={() => setLogDialogOpen(true)}>
+          <Button onClick={() => setLogDialogOpen(true)} className="flex-1 sm:flex-initial">
             <Plus className="mr-2 h-4 w-4" />
             Log Sleep
           </Button>
@@ -156,7 +156,7 @@ export function SleepPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            AI Sleep Insights
+            Sleep Insights
           </CardTitle>
           <CardDescription>Personalized recommendations for better sleep</CardDescription>
         </CardHeader>

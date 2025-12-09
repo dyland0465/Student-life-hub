@@ -162,7 +162,6 @@ export function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">Active</div>
-            <p className="text-xs text-muted-foreground">EZSolve enabled</p>
           </CardContent>
         </Card>
       </div>
@@ -211,14 +210,13 @@ export function DashboardPage() {
           </CardContent>
         </Card>
 
-        {/* AI Recommendations */}
         <Card className="col-span-1">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-primary" />
-              AI Recommendations
+              Recommendations
             </CardTitle>
-            <CardDescription>Powered by AI to help you succeed</CardDescription>
+            <CardDescription>To help you succeed</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

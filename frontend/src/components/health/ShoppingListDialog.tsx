@@ -155,7 +155,7 @@ export function ShoppingListDialog({ open, onOpenChange, shoppingList, onSave }:
             <div className="space-y-2 max-h-64 overflow-y-auto">
               {items.map((item, index) => (
                 <div key={index} className="flex gap-2 items-start p-2 border rounded-lg">
-                  <div className="flex-1 grid grid-cols-2 gap-2">
+                  <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <div>
                       <Input
                         placeholder="Item name"

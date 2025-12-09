@@ -93,12 +93,12 @@ export function MealPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Meal Tracking</h2>
           <p className="text-muted-foreground">Log your daily meals and track nutrition</p>
         </div>
-        <Button onClick={() => setMealDialogOpen(true)}>
+        <Button onClick={() => setMealDialogOpen(true)} className="w-full sm:w-auto">
           <Plus className="mr-2 h-4 w-4" />
           Log Meal
         </Button>
@@ -148,7 +148,7 @@ export function MealPage() {
       {/* AI Meal Recommendations */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
@@ -161,6 +161,7 @@ export function MealPage() {
               size="sm"
               onClick={loadMealRecommendations}
               disabled={loadingRecommendations}
+              className="w-full sm:w-auto"
             >
               {loadingRecommendations ? 'Loading...' : 'Get Recommendations'}
             </Button>

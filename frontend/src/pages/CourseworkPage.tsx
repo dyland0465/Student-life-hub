@@ -188,17 +188,18 @@ export function CourseworkPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Coursework</h2>
           <p className="text-muted-foreground">Manage your courses and assignments</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+        <div className="flex flex-wrap gap-2">
+          <Button variant="outline" onClick={() => setImportDialogOpen(true)} className="flex-1 sm:flex-initial">
             <Download className="mr-2 h-4 w-4" />
-            Import from Canvas
+            <span className="hidden sm:inline">Import from Canvas</span>
+            <span className="sm:hidden">Import</span>
           </Button>
-          <Button onClick={handleAddCourse}>
+          <Button onClick={handleAddCourse} className="flex-1 sm:flex-initial">
             <Plus className="mr-2 h-4 w-4" />
             Add Course
           </Button>
@@ -285,7 +286,7 @@ export function CourseworkPage() {
             </CardHeader>
             <CardContent>
               <Tabs defaultValue="pending" className="w-full">
-                <TabsList className="grid w-full grid-cols-3">
+                <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3">
                   <TabsTrigger value="pending">
                     Pending <Badge className="ml-2" variant="secondary">{pendingAssignments.length}</Badge>
                   </TabsTrigger>

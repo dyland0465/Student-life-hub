@@ -165,7 +165,7 @@ export function ImportCoursesDialog({ open, onOpenChange, onImportComplete }: Im
 
         {importedCourses.length === 0 ? (
           <Tabs defaultValue="canvas" onValueChange={(value) => setSelectedProvider(value as LMSProvider)}>
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
               <TabsTrigger value="canvas">Canvas</TabsTrigger>
               <TabsTrigger value="blackboard">Blackboard</TabsTrigger>
               <TabsTrigger value="google-classroom">Google</TabsTrigger>
@@ -176,16 +176,16 @@ export function ImportCoursesDialog({ open, onOpenChange, onImportComplete }: Im
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  <strong>Demo Mode:</strong> Currently showing mock Canvas data. To use real data, you'll need a Canvas API token from your institution.
+                  <strong>Demo Mode:</strong> Currently showing mock Canvas data.
                 </AlertDescription>
               </Alert>
               
               <div className="space-y-2">
-                <Label htmlFor="canvasToken">Canvas API Token (Optional for Demo)</Label>
+                <Label htmlFor="canvasToken">Canvas API Token</Label>
                 <Input
                   id="canvasToken"
                   type="password"
-                  placeholder="Enter your Canvas API token or leave blank for demo"
+                  placeholder="Enter your Canvas API token"
                   value={canvasToken}
                   onChange={(e) => setCanvasToken(e.target.value)}
                   disabled={loading}

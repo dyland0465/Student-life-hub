@@ -14,6 +14,8 @@ import {
   Dumbbell,
   UtensilsCrossed,
   ShoppingCart,
+  Calendar,
+  GraduationCap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -25,19 +27,27 @@ const navigation = [
     icon: LayoutDashboard,
   },
   {
-    name: 'Coursework',
-    href: '/coursework',
-    icon: BookOpen,
-  },
-  {
-    name: 'Sleep Schedule',
-    href: '/sleep',
-    icon: Moon,
+    name: 'Calendar',
+    href: '/calendar',
+    icon: Calendar,
   },
   {
     name: 'Chat',
     href: '/chat',
     icon: MessageCircle,
+  },
+];
+
+const educationSubItems = [
+  {
+    name: 'Coursework',
+    href: '/coursework',
+    icon: BookOpen,
+  },
+  {
+    name: 'Schedule Builder',
+    href: '/schedule',
+    icon: Calendar,
   },
 ];
 
@@ -57,6 +67,11 @@ const healthSubItems = [
     href: '/health/shopping',
     icon: ShoppingCart,
   },
+  {
+    name: 'Sleep Schedule',
+    href: '/health/sleep',
+    icon: Moon,
+  },
 ];
 
 interface SidebarProps {
@@ -66,15 +81,21 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const isEducationActive = location.pathname === '/coursework' || location.pathname === '/schedule';
   const isHealthActive = location.pathname.startsWith('/health');
+  const isCalendarActive = location.pathname === '/calendar';
+  const [educationOpen, setEducationOpen] = useState(isEducationActive);
   const [healthOpen, setHealthOpen] = useState(isHealthActive);
 
-  // Update healthOpen when location changes
+  // Update collapsible states when location changes
   useEffect(() => {
+    if (isEducationActive) {
+      setEducationOpen(true);
+    }
     if (isHealthActive) {
       setHealthOpen(true);
     }
-  }, [isHealthActive]);
+  }, [isEducationActive, isHealthActive]);
 
   return (
     <>
@@ -141,6 +162,54 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               </Link>
             );
           })}
+
+          {/* Education Collapsible */}
+          <Collapsible open={educationOpen} onOpenChange={setEducationOpen}>
+            <CollapsibleTrigger
+              className={cn(
+                'w-full flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                isEducationActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <GraduationCap className="h-5 w-5" />
+                <span>Education</span>
+              </div>
+              {educationOpen ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 mt-1">
+              {educationSubItems.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => {
+                      // Only close on mobile
+                      if (window.innerWidth < 768) {
+                        onClose();
+                      }
+                    }}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ml-6',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
 
           {/* Health & Fitness Collapsible */}
           <Collapsible open={healthOpen} onOpenChange={setHealthOpen}>

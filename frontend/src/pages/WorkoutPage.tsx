@@ -79,17 +79,17 @@ export function WorkoutPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-3xl font-bold tracking-tight">Workout</h2>
           <p className="text-muted-foreground">Track your workouts and fitness goals</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={() => setRoutineDialogOpen(true)} variant="outline">
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={() => setRoutineDialogOpen(true)} variant="outline" className="flex-1 sm:flex-initial">
             <Plus className="mr-2 h-4 w-4" />
             New Routine
           </Button>
-          <Button onClick={() => setWorkoutDialogOpen(true)}>
+          <Button onClick={() => setWorkoutDialogOpen(true)} className="flex-1 sm:flex-initial">
             <Plus className="mr-2 h-4 w-4" />
             Log Workout
           </Button>

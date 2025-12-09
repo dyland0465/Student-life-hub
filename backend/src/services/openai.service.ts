@@ -10,9 +10,9 @@ class OpenAIService {
     if (apiKey && apiKey !== 'your-openai-api-key-here') {
       this.client = new OpenAI({ apiKey });
       this.isConfigured = true;
-      console.log('✅ OpenAI service initialized');
+      console.log('OpenAI service initialized');
     } else {
-      console.warn('⚠️  OpenAI API key not configured. AI features will use mock data.');
+      console.warn('OpenAI API key not configured. AI features will use mock data.');
     }
   }
 
@@ -434,6 +434,168 @@ Format as JSON: { "items": [{"name": "...", "quantity": "..."}], "suggestions": 
         'Consider buying frozen fruits and vegetables for longer shelf life',
         'Look for sales on protein sources like chicken and fish',
       ],
+    };
+  }
+
+  async generateOptimalSchedule(
+    courses: any[],
+    parameters: any,
+    userRequirements: string[]
+  ): Promise<{
+    sections: any[];
+    score: number;
+  }> {
+    // If OpenAI not configured, return mock schedule
+    if (!this.isConfigured || !this.client) {
+      return this.getMockSchedule(courses, parameters, userRequirements);
+    }
+
+    try {
+      const prompt = this.buildSchedulePrompt(courses, parameters, userRequirements);
+
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are an AI assistant that helps students create optimal class schedules. Analyze course sections and select the best combination based on user preferences, avoiding time conflicts and optimizing for the specified parameters.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 2000,
+      });
+
+      const content = response.choices[0].message.content || '';
+      return this.parseScheduleResponse(content, courses);
+    } catch (error: any) {
+      console.error('OpenAI API error in schedule generation:', error);
+      return this.getMockSchedule(courses, parameters, userRequirements);
+    }
+  }
+
+  private buildSchedulePrompt(courses: any[], parameters: any, userRequirements: string[]): string {
+    let prompt = `Generate an optimal class schedule for the following courses:\n\n`;
+
+    // Add course information
+    for (const course of courses) {
+      prompt += `Course: ${course.courseCode} - ${course.courseName}\n`;
+      prompt += `Credits: ${course.credits}\n`;
+      prompt += `Prerequisites: ${course.prerequisites.join(', ') || 'None'}\n`;
+      prompt += `Available Sections:\n`;
+      
+      for (const section of course.sections) {
+        prompt += `  Section ${section.sectionNumber}:\n`;
+        prompt += `    Professor: ${section.professor} (Rating: ${section.professorRating || 'N/A'}, Difficulty: ${section.professorDifficulty || 'N/A'})\n`;
+        prompt += `    Schedule: ${section.schedule.map((s: any) => `${s.day} ${s.startTime}-${s.endTime}`).join(', ')}\n`;
+        prompt += `    Location: ${section.location}\n`;
+        prompt += `    Capacity: ${section.enrolled}/${section.capacity}\n`;
+        prompt += `    Online: ${section.isOnline ? 'Yes' : 'No'}\n`;
+      }
+      prompt += '\n';
+    }
+
+    // Add parameters
+    prompt += `\nOptimization Parameters:\n`;
+    if (parameters.prioritizeEasyProfessors) {
+      prompt += `- Prioritize Easy Professors: ${parameters.prioritizeEasyProfessors}%\n`;
+    }
+    if (parameters.prioritizeLateStart) {
+      prompt += `- Prioritize Late Start: ${parameters.prioritizeLateStart}%\n`;
+    }
+    if (parameters.prioritizeEarlyEnd) {
+      prompt += `- Prioritize Early End: ${parameters.prioritizeEarlyEnd}%\n`;
+    }
+    if (parameters.preferredStartTime) {
+      prompt += `- Preferred Start Time: ${parameters.preferredStartTime}\n`;
+    }
+    if (parameters.preferredEndTime) {
+      prompt += `- Preferred End Time: ${parameters.preferredEndTime}\n`;
+    }
+    if (parameters.avoidDays && parameters.avoidDays.length > 0) {
+      prompt += `- Avoid Days: ${parameters.avoidDays.join(', ')}\n`;
+    }
+    if (parameters.gapPreference) {
+      prompt += `- Gap Preference: ${parameters.gapPreference}\n`;
+    }
+    if (parameters.classSizePreference) {
+      prompt += `- Class Size Preference: ${parameters.classSizePreference}\n`;
+    }
+    if (parameters.onlinePreference) {
+      prompt += `- Online Preference: ${parameters.onlinePreference}\n`;
+    }
+
+    prompt += `\nPlease select one section for each required course, ensuring:\n`;
+    prompt += `1. No time conflicts between selected sections\n`;
+    prompt += `2. Optimal match with the specified parameters\n`;
+    prompt += `3. Sections are not full (enrolled < capacity)\n`;
+    prompt += `4. Return the schedule as JSON with sections array and optimization score (0-100)\n`;
+
+    return prompt;
+  }
+
+  private parseScheduleResponse(content: string, courses: any[]): {
+    sections: any[];
+    score: number;
+  } {
+    try {
+      // Try to extract JSON from response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        return {
+          sections: parsed.sections || [],
+          score: parsed.score || 75,
+        };
+      }
+    } catch (error) {
+      console.error('Error parsing schedule response:', error);
+    }
+
+    // Fallback to mock
+    return this.getMockSchedule(courses, {}, []);
+  }
+
+  private getMockSchedule(courses: any[], parameters: any, userRequirements: string[]): {
+    sections: any[];
+    score: number;
+  } {
+    const selectedSections: any[] = [];
+    let score = 80;
+
+    for (const course of courses) {
+      if (course.sections.length > 0) {
+        // Select first available section (can be improved with actual optimization)
+        const section = course.sections[0];
+        selectedSections.push({
+          courseCode: course.courseCode,
+          courseName: course.courseName,
+          sectionId: section.id,
+          sectionNumber: section.sectionNumber,
+          professor: section.professor,
+          schedule: section.schedule,
+          credits: course.credits,
+        });
+
+        // Adjust score based on parameters
+        if (parameters.prioritizeEasyProfessors && section.professorDifficulty) {
+          score += (5 - section.professorDifficulty) * 2;
+        }
+        if (section.professorRating) {
+          score += (section.professorRating - 3) * 5;
+        }
+      }
+    }
+
+    // Normalize score to 0-100
+    score = Math.max(0, Math.min(100, score));
+
+    return {
+      sections: selectedSections,
+      score: Math.round(score),
     };
   }
 }

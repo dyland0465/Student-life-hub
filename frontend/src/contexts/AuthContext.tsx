@@ -61,6 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email,
         major,
         year,
+        isPro: false,
       };
 
       await setDoc(doc(db, 'users', user.uid), studentData);
@@ -102,6 +103,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           email: user.email || '',
           major: 'Undeclared',
           year: 1,
+          isPro: false,
         };
 
         await setDoc(doc(db, 'users', user.uid), studentData);

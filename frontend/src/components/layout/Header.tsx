@@ -13,9 +13,10 @@ import {
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Moon, Sun, Monitor, LogOut, User, Menu } from 'lucide-react';
+import { Moon, Sun, Monitor, LogOut, User, Menu, Crown } from 'lucide-react';
 import { useState } from 'react';
 import { ProfileSettingsDialog } from '@/components/profile/ProfileSettingsDialog';
+import { ProSubscriptionDialog } from '@/components/profile/ProSubscriptionDialog';
 
 interface HeaderProps {
   onMenuClick?: () => void;
@@ -25,6 +26,7 @@ export function Header({ onMenuClick }: HeaderProps) {
   const { currentUser, studentProfile, logout } = useAuth();
   const { theme, setTheme, actualTheme } = useTheme();
   const [profileSettingsOpen, setProfileSettingsOpen] = useState(false);
+  const [proSubscriptionOpen, setProSubscriptionOpen] = useState(false);
 
   const getInitials = (name: string) => {
     return name
@@ -36,24 +38,24 @@ export function Header({ onMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6">
-      <div className="flex items-center gap-4">
+    <header className="flex h-16 items-center justify-between border-b bg-card px-4 md:px-6 overflow-hidden">
+      <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
         {onMenuClick && (
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
+            className="md:hidden flex-shrink-0"
             onClick={onMenuClick}
           >
             <Menu className="h-5 w-5" />
           </Button>
         )}
-        <h1 className="text-lg md:text-xl font-semibold">
+        <h1 className="text-base sm:text-lg md:text-xl font-semibold truncate">
           Welcome back, {studentProfile?.name?.split(' ')[0] || 'Student'}!
         </h1>
       </div>
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
@@ -118,6 +120,12 @@ export function Header({ onMenuClick }: HeaderProps) {
               <User className="mr-2 h-4 w-4" />
               Profile Settings
             </DropdownMenuItem>
+            {!studentProfile?.isPro && (
+              <DropdownMenuItem onClick={() => setProSubscriptionOpen(true)}>
+                <Crown className="mr-2 h-4 w-4 text-yellow-500" />
+                Go Pro
+              </DropdownMenuItem>
+            )}
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-destructive">
               <LogOut className="mr-2 h-4 w-4" />
@@ -130,6 +138,10 @@ export function Header({ onMenuClick }: HeaderProps) {
       <ProfileSettingsDialog
         open={profileSettingsOpen}
         onOpenChange={setProfileSettingsOpen}
+      />
+      <ProSubscriptionDialog
+        open={proSubscriptionOpen}
+        onOpenChange={setProSubscriptionOpen}
       />
     </header>
   );

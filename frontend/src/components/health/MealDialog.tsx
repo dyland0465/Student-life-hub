@@ -109,7 +109,7 @@ export function MealDialog({ open, onOpenChange, meal, onSave }: MealDialogProps
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date">Date & Time</Label>
               <Input
@@ -148,7 +148,7 @@ export function MealDialog({ open, onOpenChange, meal, onSave }: MealDialogProps
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="calories">Calories</Label>
               <Input
@@ -178,7 +178,7 @@ export function MealDialog({ open, onOpenChange, meal, onSave }: MealDialogProps
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="carbs">Carbs (g)</Label>
               <Input

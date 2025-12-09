@@ -22,28 +22,38 @@ async function getAuthToken(): Promise<string | null> {
  * Make authenticated API request
  */
 async function apiRequest(endpoint: string, options: RequestInit = {}) {
-  const token = await getAuthToken();
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options.headers as Record<string, string>),
-  };
+  try {
+    const token = await getAuthToken();
+    
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string>),
+    };
 
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({ error: 'Request failed' }));
+      throw new Error(error.error || `HTTP ${response.status}`);
+    }
+
+    return response.json();
+  } catch (error: any) {
+    // Handle network errors (backend not running, CORS, etc.)
+    if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+      throw new Error(
+        `Cannot connect to backend server at ${API_URL}. Please ensure the backend is running.`
+      );
+    }
+    throw error;
   }
-
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ error: 'Request failed' }));
-    throw new Error(error.error || `HTTP ${response.status}`);
-  }
-
-  return response.json();
 }
 
 export const api = {
@@ -246,6 +256,174 @@ export const api = {
     return apiRequest('/api/chat/profile', {
       method: 'PUT',
       body: JSON.stringify({ chatDisplayName }),
+    });
+  },
+
+  /**
+   * Schedule Builder functionality
+   */
+  async searchCourses(query?: string) {
+    const params = query ? `?q=${encodeURIComponent(query)}` : '';
+    return apiRequest(`/api/schedule/courses${params}`);
+  },
+
+  async getCourse(courseCode: string) {
+    return apiRequest(`/api/schedule/courses/${courseCode}`);
+  },
+
+  async generateSchedule(request: {
+    semester: string;
+    requiredCourses: string[];
+    selectedCourses?: string[];
+    presetId?: string;
+    parameters?: any;
+  }) {
+    return apiRequest('/api/schedule/generate', {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  },
+
+  async getPresets() {
+    return apiRequest('/api/schedule/presets');
+  },
+
+  async createPreset(name: string, parameters: any) {
+    return apiRequest('/api/schedule/presets', {
+      method: 'POST',
+      body: JSON.stringify({ name, parameters }),
+    });
+  },
+
+  async updatePreset(presetId: string, name: string, parameters: any) {
+    return apiRequest(`/api/schedule/presets/${presetId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ name, parameters }),
+    });
+  },
+
+  async deletePreset(presetId: string) {
+    return apiRequest(`/api/schedule/presets/${presetId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async addToRegistrationQueue(scheduleId: string, sections: any[], registrationDate: string) {
+    return apiRequest('/api/schedule/register', {
+      method: 'POST',
+      body: JSON.stringify({ scheduleId, sections, registrationDate }),
+    });
+  },
+
+  async getRegistrationQueue() {
+    return apiRequest('/api/schedule/queue');
+  },
+
+  async connectLionPath(username: string, password: string) {
+    return apiRequest('/api/schedule/lionpath/connect', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+  },
+
+  async getLionPathStatus() {
+    return apiRequest('/api/schedule/lionpath/status');
+  },
+
+  async disconnectLionPath() {
+    return apiRequest('/api/schedule/lionpath/disconnect', {
+      method: 'POST',
+    });
+  },
+
+  /**
+   * Calendar functionality
+   */
+  async getEvents(startDate?: string, endDate?: string) {
+    const params = new URLSearchParams();
+    if (startDate) params.append('startDate', startDate);
+    if (endDate) params.append('endDate', endDate);
+    const queryString = params.toString();
+    return apiRequest(`/api/calendar/events${queryString ? `?${queryString}` : ''}`);
+  },
+
+  async createEvent(event: {
+    title: string;
+    date: string;
+    time?: string;
+    category: 'academic' | 'personal' | 'wellness';
+    description?: string;
+  }) {
+    return apiRequest('/api/calendar/events', {
+      method: 'POST',
+      body: JSON.stringify(event),
+    });
+  },
+
+  async updateEvent(eventId: string, event: {
+    title?: string;
+    date?: string;
+    time?: string;
+    category?: 'academic' | 'personal' | 'wellness';
+    description?: string;
+  }) {
+    return apiRequest(`/api/calendar/events/${eventId}`, {
+      method: 'PUT',
+      body: JSON.stringify(event),
+    });
+  },
+
+  async deleteEvent(eventId: string) {
+    return apiRequest(`/api/calendar/events/${eventId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  async getCalendarSyncConfig() {
+    return apiRequest('/api/calendar/sync/config');
+  },
+
+  async updateCalendarSyncConfig(config: {
+    eventSources?: {
+      assignments?: boolean;
+      workouts?: boolean;
+      meals?: boolean;
+      sleep?: boolean;
+    };
+    syncFrequency?: 'realtime' | 'hourly' | 'daily';
+  }) {
+    return apiRequest('/api/calendar/sync/config', {
+      method: 'PUT',
+      body: JSON.stringify(config),
+    });
+  },
+
+  async connectGoogleCalendar(accessToken: string, refreshToken: string, calendarId?: string) {
+    return apiRequest('/api/calendar/sync/google/connect', {
+      method: 'POST',
+      body: JSON.stringify({ accessToken, refreshToken, calendarId }),
+    });
+  },
+
+  async connectAppleCalendar(serverUrl: string, username: string, password: string, calendarName?: string) {
+    return apiRequest('/api/calendar/sync/apple/connect', {
+      method: 'POST',
+      body: JSON.stringify({ serverUrl, username, password, calendarName }),
+    });
+  },
+
+  async disconnectCalendar(service: 'google' | 'apple') {
+    return apiRequest('/api/calendar/sync/disconnect', {
+      method: 'POST',
+      body: JSON.stringify({ service }),
+    });
+  },
+
+  async syncCalendar(service: 'google' | 'apple', direction: 'push' | 'pull') {
+    const endpoint = direction === 'push' ? '/api/calendar/sync/push' : '/api/calendar/sync/pull';
+    return apiRequest(endpoint, {
+      method: 'POST',
+      body: JSON.stringify({ service }),
     });
   },
 };

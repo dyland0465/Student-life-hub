@@ -28,7 +28,7 @@ export function ChatRoomTabs({
   };
 
   return (
-    <div className="flex items-center gap-2 p-2 bg-background border-t overflow-x-auto scrollbar-thin">
+    <div className="flex items-center gap-2 p-2 bg-background border-t overflow-x-auto scrollbar-thin max-w-full">
       {/* Global room tab */}
       <Button
         variant={activeRoomId === 'global' ? 'default' : 'ghost'}
