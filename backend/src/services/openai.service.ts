@@ -256,6 +256,117 @@ Format as JSON: { "analysis": "...", "recommendations": ["...", "..."], "score":
     };
   }
 
+  async getMealRecommendations(data: {
+    mealHistory?: any[];
+    preferences?: string[];
+    dietaryRestrictions?: string[];
+    targetCalories?: number;
+  }): Promise<any[]> {
+    if (!this.isConfigured || !this.client) {
+      return this.getMockMealRecommendations(data);
+    }
+
+    try {
+      const historyContext = data.mealHistory && data.mealHistory.length > 0
+        ? `Recent meals: ${data.mealHistory.slice(0, 5).map((m: any) => m.foodName).join(', ')}`
+        : 'No meal history available';
+      
+      const prompt = `Create 3-4 personalized meal recommendations for a student with:
+- Meal History: ${historyContext}
+- Preferences: ${data.preferences?.join(', ') || 'none specified'}
+- Dietary Restrictions: ${data.dietaryRestrictions?.join(', ') || 'none'}
+- Target Calories: ${data.targetCalories || 'not specified'} per day
+
+Format as a JSON array with: foodName, mealType (Breakfast/Lunch/Dinner/Snack), calories, protein (grams), carbs (grams), fats (grams), description`;
+
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a nutritionist creating healthy meal recommendations for busy students.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.8,
+        max_tokens: 600,
+      });
+
+      const content = response.choices[0].message.content || '';
+      
+      try {
+        const parsed = JSON.parse(content);
+        return Array.isArray(parsed) ? parsed : this.getMockMealRecommendations(data);
+      } catch {
+        return this.getMockMealRecommendations(data);
+      }
+    } catch (error) {
+      console.error('OpenAI meal recommendations error:', error);
+      return this.getMockMealRecommendations(data);
+    }
+  }
+
+  async getShoppingListSuggestions(data: {
+    mealPlan?: any[];
+    recentMeals?: any[];
+    preferences?: string[];
+  }): Promise<{
+    items: Array<{ name: string; quantity: string }>;
+    suggestions: string[];
+  }> {
+    if (!this.isConfigured || !this.client) {
+      return this.getMockShoppingListSuggestions(data);
+    }
+
+    try {
+      const mealContext = data.mealPlan && data.mealPlan.length > 0
+        ? `Planned meals: ${data.mealPlan.map((m: any) => m.foodName || m.name).join(', ')}`
+        : data.recentMeals && data.recentMeals.length > 0
+        ? `Recent meals: ${data.recentMeals.slice(0, 5).map((m: any) => m.foodName).join(', ')}`
+        : 'No meal context available';
+
+      const prompt = `Generate a shopping list based on:
+- ${mealContext}
+- Preferences: ${data.preferences?.join(', ') || 'none specified'}
+
+Provide:
+1. A list of grocery items with quantities
+2. 2-3 helpful shopping tips
+
+Format as JSON: { "items": [{"name": "...", "quantity": "..."}], "suggestions": ["...", "..."] }`;
+
+      const response = await this.client.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a helpful assistant creating shopping lists for students based on their meal plans.',
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        temperature: 0.7,
+        max_tokens: 500,
+      });
+
+      const content = response.choices[0].message.content || '';
+      
+      try {
+        return JSON.parse(content);
+      } catch {
+        return this.getMockShoppingListSuggestions(data);
+      }
+    } catch (error) {
+      console.error('OpenAI shopping list error:', error);
+      return this.getMockShoppingListSuggestions(data);
+    }
+  }
+
   private extractSteps(content: string): string[] {
     // Try to extract numbered steps from the content
     const stepMatches = content.match(/\d+\.\s+[^\n]+/g);
@@ -263,6 +374,67 @@ Format as JSON: { "analysis": "...", "recommendations": ["...", "..."], "score":
       return stepMatches.map(step => step.replace(/^\d+\.\s+/, ''));
     }
     return [];
+  }
+
+  private getMockMealRecommendations(data: any) {
+    return [
+      {
+        foodName: 'Greek Yogurt with Berries and Granola',
+        mealType: 'Breakfast',
+        calories: 350,
+        protein: 20,
+        carbs: 45,
+        fats: 8,
+        description: 'High-protein breakfast to fuel your morning classes. Rich in antioxidants and fiber.',
+      },
+      {
+        foodName: 'Grilled Chicken Salad',
+        mealType: 'Lunch',
+        calories: 450,
+        protein: 35,
+        carbs: 25,
+        fats: 20,
+        description: 'Balanced lunch with lean protein and fresh vegetables. Perfect for maintaining energy throughout the day.',
+      },
+      {
+        foodName: 'Salmon with Quinoa and Vegetables',
+        mealType: 'Dinner',
+        calories: 550,
+        protein: 40,
+        carbs: 50,
+        fats: 18,
+        description: 'Nutrient-dense dinner with omega-3 fatty acids. Great for brain health and recovery.',
+      },
+      {
+        foodName: 'Apple with Almond Butter',
+        mealType: 'Snack',
+        calories: 200,
+        protein: 6,
+        carbs: 25,
+        fats: 10,
+        description: 'Healthy snack to keep you satisfied between meals. Provides sustained energy.',
+      },
+    ];
+  }
+
+  private getMockShoppingListSuggestions(data: any) {
+    return {
+      items: [
+        { name: 'Chicken Breast', quantity: '1 lb' },
+        { name: 'Salmon Fillets', quantity: '2 pieces' },
+        { name: 'Greek Yogurt', quantity: '32 oz' },
+        { name: 'Mixed Berries', quantity: '1 package' },
+        { name: 'Quinoa', quantity: '1 bag' },
+        { name: 'Mixed Greens', quantity: '1 bag' },
+        { name: 'Almond Butter', quantity: '1 jar' },
+        { name: 'Apples', quantity: '6 pieces' },
+      ],
+      suggestions: [
+        'Buy fresh produce at the beginning of the week for maximum freshness',
+        'Consider buying frozen fruits and vegetables for longer shelf life',
+        'Look for sales on protein sources like chicken and fish',
+      ],
+    };
   }
 }
 

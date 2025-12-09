@@ -96,6 +96,35 @@ export const api = {
   },
 
   /**
+   * Get AI meal recommendations
+   */
+  async getMealRecommendations(data: {
+    mealHistory?: any[];
+    preferences?: string[];
+    dietaryRestrictions?: string[];
+    targetCalories?: number;
+  }) {
+    return apiRequest('/api/ai/meal-recommendations', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
+   * Get AI shopping list suggestions
+   */
+  async getShoppingListSuggestions(data: {
+    mealPlan?: any[];
+    recentMeals?: any[];
+    preferences?: string[];
+  }) {
+    return apiRequest('/api/ai/shopping-list-suggestions', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  },
+
+  /**
    * Health check
    */
   async healthCheck() {

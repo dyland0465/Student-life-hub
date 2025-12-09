@@ -2,22 +2,39 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, Dumbbell, TrendingUp, Sparkles } from 'lucide-react';
+import { Plus, Dumbbell, TrendingUp, Sparkles, UtensilsCrossed, ShoppingCart } from 'lucide-react';
 import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import type { FitnessRoutine, WorkoutLog } from '@/types';
+import type { FitnessRoutine, WorkoutLog, Meal, ShoppingList } from '@/types';
 import { RoutineDialog } from '@/components/health/RoutineDialog';
 import { WorkoutDialog } from '@/components/health/WorkoutDialog';
 import { WorkoutCard } from '@/components/health/WorkoutCard';
+import { MealDialog } from '@/components/health/MealDialog';
+import { MealCard } from '@/components/health/MealCard';
+import { ShoppingListDialog } from '@/components/health/ShoppingListDialog';
+import { ShoppingListCard } from '@/components/health/ShoppingListCard';
+import { aiService } from '@/lib/ai-service';
 
 export function HealthPage() {
   const { currentUser } = useAuth();
   const [routines, setRoutines] = useState<FitnessRoutine[]>([]);
   const [workoutLogs, setWorkoutLogs] = useState<WorkoutLog[]>([]);
+  const [meals, setMeals] = useState<Meal[]>([]);
+  const [shoppingLists, setShoppingLists] = useState<ShoppingList[]>([]);
   const [loading, setLoading] = useState(true);
   const [routineDialogOpen, setRoutineDialogOpen] = useState(false);
   const [workoutDialogOpen, setWorkoutDialogOpen] = useState(false);
+  const [mealDialogOpen, setMealDialogOpen] = useState(false);
+  const [shoppingListDialogOpen, setShoppingListDialogOpen] = useState(false);
+  const [mealRecommendations, setMealRecommendations] = useState<any[]>([]);
+  const [loadingRecommendations, setLoadingRecommendations] = useState(false);
+  const [shoppingSuggestions, setShoppingSuggestions] = useState<{
+    items: Array<{ name: string; quantity: string }>;
+    suggestions: string[];
+  } | null>(null);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -55,6 +72,39 @@ export function HealthPage() {
         date: doc.data().date?.toDate() || new Date(),
       })) as WorkoutLog[];
       setWorkoutLogs(loadedLogs);
+
+      // Load meals
+      const mealsRef = collection(db, 'meals');
+      const mealsQuery = query(
+        mealsRef,
+        where('userId', '==', currentUser.uid),
+        orderBy('date', 'desc'),
+        limit(50)
+      );
+      const mealsSnapshot = await getDocs(mealsQuery);
+      const loadedMeals = mealsSnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+        date: doc.data().date?.toDate() || new Date(),
+        createdAt: doc.data().createdAt?.toDate() || new Date(),
+      })) as Meal[];
+      setMeals(loadedMeals);
+
+      // Load shopping lists
+      const shoppingListsRef = collection(db, 'shoppingLists');
+      const shoppingListsQuery = query(
+        shoppingListsRef,
+        where('userId', '==', currentUser.uid),
+        orderBy('updatedAt', 'desc')
+      );
+      const shoppingListsSnapshot = await getDocs(shoppingListsQuery);
+      const loadedShoppingLists = shoppingListsSnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+        createdAt: doc.data().createdAt?.toDate() || new Date(),
+        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+      })) as ShoppingList[];
+      setShoppingLists(loadedShoppingLists);
     } catch (error) {
       console.error('Error loading health data:', error);
     } finally {
@@ -65,6 +115,54 @@ export function HealthPage() {
   const totalWorkouts = workoutLogs.length;
   const totalMinutes = workoutLogs.reduce((sum, log) => sum + log.duration, 0);
   const avgDuration = totalWorkouts > 0 ? Math.round(totalMinutes / totalWorkouts) : 0;
+
+  // Meal statistics
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const todayMeals = meals.filter((meal) => {
+    const mealDate = new Date(meal.date);
+    mealDate.setHours(0, 0, 0, 0);
+    return mealDate.getTime() === today.getTime();
+  });
+  const todayCalories = todayMeals.reduce((sum, meal) => sum + meal.calories, 0);
+  const todayProtein = todayMeals.reduce((sum, meal) => sum + meal.protein, 0);
+  const todayCarbs = todayMeals.reduce((sum, meal) => sum + meal.carbs, 0);
+  const todayFats = todayMeals.reduce((sum, meal) => sum + meal.fats, 0);
+
+  async function loadMealRecommendations() {
+    setLoadingRecommendations(true);
+    try {
+      const recommendations = await aiService.getMealRecommendations({
+        mealHistory: meals.slice(0, 10),
+        targetCalories: 2000,
+      });
+      setMealRecommendations(recommendations);
+    } catch (error) {
+      console.error('Error loading meal recommendations:', error);
+    } finally {
+      setLoadingRecommendations(false);
+    }
+  }
+
+  async function loadShoppingSuggestions() {
+    setLoadingSuggestions(true);
+    try {
+      const suggestions = await aiService.getShoppingListSuggestions({
+        recentMeals: meals.slice(0, 10),
+      });
+      setShoppingSuggestions(suggestions);
+    } catch (error) {
+      console.error('Error loading shopping suggestions:', error);
+    } finally {
+      setLoadingSuggestions(false);
+    }
+  }
+
+  function handleCreateListFromSuggestions() {
+    if (!shoppingSuggestions) return;
+    // This will be handled by opening the dialog with pre-filled items
+    // For now, we'll just show the suggestions
+  }
 
   if (loading) {
     return (
@@ -174,11 +272,13 @@ export function HealthPage() {
         </CardContent>
       </Card>
 
-      {/* Tabs for Routines and Workout History */}
+      {/* Tabs for Routines, Workout History, Meals, and Shopping Lists */}
       <Tabs defaultValue="history" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="history">Workout History</TabsTrigger>
           <TabsTrigger value="routines">My Routines</TabsTrigger>
+          <TabsTrigger value="meals">Meals</TabsTrigger>
+          <TabsTrigger value="shopping">Shopping Lists</TabsTrigger>
         </TabsList>
 
         <TabsContent value="history" className="space-y-4">
@@ -253,6 +353,271 @@ export function HealthPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="meals" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Meal Tracking</CardTitle>
+                  <CardDescription>Log your daily meals and track nutrition</CardDescription>
+                </div>
+                <Button onClick={() => setMealDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Log Meal
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Today's Nutrition Stats */}
+              <div className="grid gap-4 md:grid-cols-4 mb-6">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Today's Calories</CardTitle>
+                    <UtensilsCrossed className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{todayCalories}</div>
+                    <p className="text-xs text-muted-foreground">kcal</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Protein</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{todayProtein.toFixed(1)}</div>
+                    <p className="text-xs text-muted-foreground">grams</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Carbs</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{todayCarbs.toFixed(1)}</div>
+                    <p className="text-xs text-muted-foreground">grams</p>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Fats</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{todayFats.toFixed(1)}</div>
+                    <p className="text-xs text-muted-foreground">grams</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* AI Meal Recommendations */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        AI Meal Recommendations
+                      </CardTitle>
+                      <CardDescription>Personalized meal suggestions based on your history</CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadMealRecommendations}
+                      disabled={loadingRecommendations}
+                    >
+                      {loadingRecommendations ? 'Loading...' : 'Get Recommendations'}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {mealRecommendations.length === 0 ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Click "Get Recommendations" to see AI-powered meal suggestions
+                    </p>
+                  ) : (
+                    <div className="space-y-3">
+                      {mealRecommendations.map((rec, index) => (
+                        <div
+                          key={index}
+                          className="rounded-lg bg-primary/5 p-4 border border-primary/20"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-2">
+                                <h4 className="font-semibold">{rec.foodName}</h4>
+                                <Badge variant="secondary">{rec.mealType}</Badge>
+                              </div>
+                              <p className="text-sm text-muted-foreground mb-2">{rec.description}</p>
+                              <div className="grid grid-cols-4 gap-2 text-xs">
+                                <div>
+                                  <span className="text-muted-foreground">Cal:</span>{' '}
+                                  <span className="font-medium">{rec.calories}</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">P:</span>{' '}
+                                  <span className="font-medium">{rec.protein}g</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">C:</span>{' '}
+                                  <span className="font-medium">{rec.carbs}g</span>
+                                </div>
+                                <div>
+                                  <span className="text-muted-foreground">F:</span>{' '}
+                                  <span className="font-medium">{rec.fats}g</span>
+                                </div>
+                              </div>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                // Pre-fill meal dialog with recommendation
+                                setMealDialogOpen(true);
+                                // Note: We'd need to pass the recommendation data to MealDialog
+                                // For now, user can manually enter
+                              }}
+                            >
+                              Add to Log
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {meals.length === 0 ? (
+                <div className="text-center py-8">
+                  <UtensilsCrossed className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    No meals logged yet. Start tracking your nutrition!
+                  </p>
+                  <Button onClick={() => setMealDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Log Your First Meal
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {meals.map((meal) => (
+                    <MealCard key={meal.id} meal={meal} onUpdate={loadHealthData} />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="shopping" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle>Shopping Lists</CardTitle>
+                  <CardDescription>Manage your shopping lists</CardDescription>
+                </div>
+                <Button onClick={() => setShoppingListDialogOpen(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  New List
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* AI Shopping List Suggestions */}
+              <Card className="mb-6">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <CardTitle className="flex items-center gap-2">
+                        <Sparkles className="h-5 w-5 text-primary" />
+                        AI Shopping Suggestions
+                      </CardTitle>
+                      <CardDescription>Generate a shopping list from your meal history</CardDescription>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={loadShoppingSuggestions}
+                      disabled={loadingSuggestions}
+                    >
+                      {loadingSuggestions ? 'Loading...' : 'Get Suggestions'}
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {!shoppingSuggestions ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">
+                      Click "Get Suggestions" to generate a shopping list based on your meals
+                    </p>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">Suggested Items:</h4>
+                        <div className="space-y-1">
+                          {shoppingSuggestions.items.map((item, index) => (
+                            <div key={index} className="flex items-center gap-2 text-sm">
+                              <span className="text-muted-foreground">•</span>
+                              <span>{item.name}</span>
+                              {item.quantity && (
+                                <span className="text-muted-foreground">({item.quantity})</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      {shoppingSuggestions.suggestions && shoppingSuggestions.suggestions.length > 0 && (
+                        <div>
+                          <h4 className="text-sm font-medium mb-2">Tips:</h4>
+                          <ul className="space-y-1">
+                            {shoppingSuggestions.suggestions.map((tip, index) => (
+                              <li key={index} className="text-sm text-muted-foreground">
+                                • {tip}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                      <Button
+                        className="w-full"
+                        onClick={() => {
+                          // Create a new shopping list with suggested items
+                          setShoppingListDialogOpen(true);
+                          // Note: We'd need to pass the items to ShoppingListDialog
+                          // For now, user can manually create and reference suggestions
+                        }}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create List from Suggestions
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {shoppingLists.length === 0 ? (
+                <div className="text-center py-8">
+                  <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-sm text-muted-foreground mb-4">
+                    No shopping lists yet. Create your first list!
+                  </p>
+                  <Button onClick={() => setShoppingListDialogOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create Shopping List
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {shoppingLists.map((list) => (
+                    <ShoppingListCard key={list.id} shoppingList={list} onUpdate={loadHealthData} />
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
       </Tabs>
 
       <RoutineDialog
@@ -265,6 +630,18 @@ export function HealthPage() {
         open={workoutDialogOpen}
         onOpenChange={setWorkoutDialogOpen}
         routines={routines}
+        onSave={loadHealthData}
+      />
+
+      <MealDialog
+        open={mealDialogOpen}
+        onOpenChange={setMealDialogOpen}
+        onSave={loadHealthData}
+      />
+
+      <ShoppingListDialog
+        open={shoppingListDialogOpen}
+        onOpenChange={setShoppingListDialogOpen}
         onSave={loadHealthData}
       />
     </div>

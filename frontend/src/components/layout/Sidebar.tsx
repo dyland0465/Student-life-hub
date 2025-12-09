@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import {
   LayoutDashboard,
@@ -8,8 +9,14 @@ import {
   Sparkles,
   MessageCircle,
   X,
+  ChevronDown,
+  ChevronRight,
+  Dumbbell,
+  UtensilsCrossed,
+  ShoppingCart,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 const navigation = [
   {
@@ -23,11 +30,6 @@ const navigation = [
     icon: BookOpen,
   },
   {
-    name: 'Health & Fitness',
-    href: '/health',
-    icon: Heart,
-  },
-  {
     name: 'Sleep Schedule',
     href: '/sleep',
     icon: Moon,
@@ -39,6 +41,24 @@ const navigation = [
   },
 ];
 
+const healthSubItems = [
+  {
+    name: 'Workout',
+    href: '/health/workout',
+    icon: Dumbbell,
+  },
+  {
+    name: 'Meal',
+    href: '/health/meal',
+    icon: UtensilsCrossed,
+  },
+  {
+    name: 'Shopping List',
+    href: '/health/shopping',
+    icon: ShoppingCart,
+  },
+];
+
 interface SidebarProps {
   isOpen: boolean;
   onClose: () => void;
@@ -46,6 +66,15 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const location = useLocation();
+  const isHealthActive = location.pathname.startsWith('/health');
+  const [healthOpen, setHealthOpen] = useState(isHealthActive);
+
+  // Update healthOpen when location changes
+  useEffect(() => {
+    if (isHealthActive) {
+      setHealthOpen(true);
+    }
+  }, [isHealthActive]);
 
   return (
     <>
@@ -87,7 +116,7 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
             <X className="h-5 w-5" />
           </Button>
         </div>
-        <nav className="flex-1 space-y-1 px-3 py-4">
+        <nav className="flex-1 space-y-1 px-3 py-4 overflow-y-auto">
           {navigation.map((item) => {
             const isActive = location.pathname === item.href;
             return (
@@ -112,6 +141,54 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
               </Link>
             );
           })}
+
+          {/* Health & Fitness Collapsible */}
+          <Collapsible open={healthOpen} onOpenChange={setHealthOpen}>
+            <CollapsibleTrigger
+              className={cn(
+                'w-full flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                isHealthActive
+                  ? 'bg-primary text-primary-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <Heart className="h-5 w-5" />
+                <span>Health & Fitness</span>
+              </div>
+              {healthOpen ? (
+                <ChevronDown className="h-4 w-4" />
+              ) : (
+                <ChevronRight className="h-4 w-4" />
+              )}
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 mt-1">
+              {healthSubItems.map((item) => {
+                const isActive = location.pathname === item.href;
+                return (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    onClick={() => {
+                      // Only close on mobile
+                      if (window.innerWidth < 768) {
+                        onClose();
+                      }
+                    }}
+                    className={cn(
+                      'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ml-6',
+                      isActive
+                        ? 'bg-primary text-primary-foreground'
+                        : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+                    )}
+                  >
+                    <item.icon className="h-4 w-4" />
+                    {item.name}
+                  </Link>
+                );
+              })}
+            </CollapsibleContent>
+          </Collapsible>
         </nav>
       </div>
     </>

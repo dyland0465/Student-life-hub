@@ -98,5 +98,46 @@ router.post('/sleep-insights', optionalAuth, aiLimiter, async (req, res, next) =
   }
 });
 
+// Get meal recommendations
+router.post('/meal-recommendations', optionalAuth, aiLimiter, async (req, res, next) => {
+  try {
+    const { mealHistory, preferences, dietaryRestrictions, targetCalories } = req.body;
+
+    const recommendations = await openAIService.getMealRecommendations({
+      mealHistory: mealHistory || [],
+      preferences: preferences || [],
+      dietaryRestrictions: dietaryRestrictions || [],
+      targetCalories,
+    });
+
+    res.json({
+      success: true,
+      recommendations,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Get shopping list suggestions
+router.post('/shopping-list-suggestions', optionalAuth, aiLimiter, async (req, res, next) => {
+  try {
+    const { mealPlan, recentMeals, preferences } = req.body;
+
+    const suggestions = await openAIService.getShoppingListSuggestions({
+      mealPlan: mealPlan || [],
+      recentMeals: recentMeals || [],
+      preferences: preferences || [],
+    });
+
+    res.json({
+      success: true,
+      suggestions,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;
 

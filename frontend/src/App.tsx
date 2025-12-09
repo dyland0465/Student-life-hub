@@ -11,7 +11,9 @@ import { LoginPage } from '@/pages/LoginPage';
 import { RegisterPage } from '@/pages/RegisterPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { CourseworkPage } from '@/pages/CourseworkPage';
-import { HealthPage } from '@/pages/HealthPage';
+import { WorkoutPage } from '@/pages/WorkoutPage';
+import { MealPage } from '@/pages/MealPage';
+import { ShoppingListPage } from '@/pages/ShoppingListPage';
 import { SleepPage } from '@/pages/SleepPage';
 import { ChatPage } from '@/pages/ChatPage';
 import { ErrorPage } from '@/pages/ErrorPage';
@@ -39,7 +41,10 @@ function App() {
               >
                 <Route path="/dashboard" element={<DashboardPage />} />
                 <Route path="/coursework" element={<CourseworkPage />} />
-                <Route path="/health" element={<HealthPage />} />
+                <Route path="/health" element={<Navigate to="/health/workout" replace />} />
+                <Route path="/health/workout" element={<WorkoutPage />} />
+                <Route path="/health/meal" element={<MealPage />} />
+                <Route path="/health/shopping" element={<ShoppingListPage />} />
                 <Route path="/sleep" element={<SleepPage />} />
                 <Route path="/chat" element={<ChatPage />} />
               </Route>

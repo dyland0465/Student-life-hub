@@ -56,6 +56,37 @@ export interface WorkoutLog {
   notes?: string;
 }
 
+// Meal tracking types
+export interface Meal {
+  id: string;
+  userId: string;
+  date: Date;
+  mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
+  foodName: string;
+  calories: number;
+  protein: number; // grams
+  carbs: number; // grams
+  fats: number; // grams
+  notes?: string;
+  createdAt: Date;
+}
+
+// Shopping list types
+export interface ShoppingListItem {
+  name: string;
+  quantity: string;
+  checked: boolean;
+}
+
+export interface ShoppingList {
+  id: string;
+  userId: string;
+  name: string;
+  items: ShoppingListItem[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 // Sleep types
 export interface SleepSchedule {
   id: string;

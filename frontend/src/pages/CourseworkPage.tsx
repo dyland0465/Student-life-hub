@@ -4,8 +4,25 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Plus, BookOpen, Download } from 'lucide-react';
-import { collection, query, where, getDocs, addDoc, updateDoc, doc } from 'firebase/firestore';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { Plus, BookOpen, Download, Settings, Edit, Trash2 } from 'lucide-react';
+import { collection, query, where, getDocs, addDoc, updateDoc, doc, deleteDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import type { Course } from '@/types';
 import { CourseDialog } from '@/components/coursework/CourseDialog';
@@ -22,6 +39,8 @@ export function CourseworkPage() {
   const [assignmentDialogOpen, setAssignmentDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [courseToDelete, setCourseToDelete] = useState<Course | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -72,6 +91,41 @@ export function CourseworkPage() {
   function handleAddAssignment(course: Course) {
     setSelectedCourse(course);
     setAssignmentDialogOpen(true);
+  }
+
+  function handleEditCourse(course: Course) {
+    setSelectedCourse(course);
+    setCourseDialogOpen(true);
+  }
+
+  function handleDeleteCourse(course: Course) {
+    setCourseToDelete(course);
+    setDeleteDialogOpen(true);
+  }
+
+  async function confirmDeleteCourse() {
+    if (!courseToDelete || !currentUser) return;
+
+    try {
+      const courseRef = doc(db, 'courses', courseToDelete.id);
+      await deleteDoc(courseRef);
+
+      toast({
+        title: 'Success',
+        description: 'Course deleted successfully',
+      });
+
+      setDeleteDialogOpen(false);
+      setCourseToDelete(null);
+      loadCourses();
+    } catch (error) {
+      console.error('Error deleting course:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to delete course',
+        variant: 'destructive',
+      });
+    }
   }
 
   async function handleSaveCourse(courseData: Partial<Course>) {
@@ -172,8 +226,38 @@ export function CourseworkPage() {
             {courses.map((course) => (
               <Card key={course.id}>
                 <CardHeader>
-                  <CardTitle className="text-lg">{course.courseName}</CardTitle>
-                  <CardDescription>{course.courseId}</CardDescription>
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <CardTitle className="text-lg">{course.courseName}</CardTitle>
+                      <CardDescription>{course.courseId}</CardDescription>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleEditCourse(course)}>
+                          <Edit className="mr-2 h-4 w-4" />
+                          Edit Course
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteCourse(course)}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Delete Course
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
@@ -271,7 +355,12 @@ export function CourseworkPage() {
 
       <CourseDialog
         open={courseDialogOpen}
-        onOpenChange={setCourseDialogOpen}
+        onOpenChange={(open) => {
+          setCourseDialogOpen(open);
+          if (!open) {
+            setSelectedCourse(null);
+          }
+        }}
         course={selectedCourse}
         onSave={handleSaveCourse}
       />
@@ -288,6 +377,23 @@ export function CourseworkPage() {
         onOpenChange={setImportDialogOpen}
         onImportComplete={loadCourses}
       />
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Course</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{courseToDelete?.courseName}"? This action cannot be undone and will also delete all associated assignments.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteCourse} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

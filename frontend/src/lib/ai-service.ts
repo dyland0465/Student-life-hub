@@ -128,6 +128,76 @@ class AIService {
     };
   }
 
+  async getMealRecommendations(data: {
+    mealHistory?: any[];
+    preferences?: string[];
+    dietaryRestrictions?: string[];
+    targetCalories?: number;
+  }): Promise<any[]> {
+    try {
+      const response = await api.getMealRecommendations(data);
+      return response.recommendations || [];
+    } catch (error) {
+      console.error('Error getting meal recommendations:', error);
+      return this.getMockMealRecommendations();
+    }
+  }
+
+  async getShoppingListSuggestions(data: {
+    mealPlan?: any[];
+    recentMeals?: any[];
+    preferences?: string[];
+  }): Promise<{
+    items: Array<{ name: string; quantity: string }>;
+    suggestions: string[];
+  }> {
+    try {
+      const response = await api.getShoppingListSuggestions(data);
+      return response.suggestions || { items: [], suggestions: [] };
+    } catch (error) {
+      console.error('Error getting shopping list suggestions:', error);
+      return this.getMockShoppingListSuggestions();
+    }
+  }
+
+  private getMockMealRecommendations() {
+    return [
+      {
+        foodName: 'Greek Yogurt with Berries',
+        mealType: 'Breakfast',
+        calories: 350,
+        protein: 20,
+        carbs: 45,
+        fats: 8,
+        description: 'High-protein breakfast to fuel your morning classes.',
+      },
+      {
+        foodName: 'Grilled Chicken Salad',
+        mealType: 'Lunch',
+        calories: 450,
+        protein: 35,
+        carbs: 25,
+        fats: 20,
+        description: 'Balanced lunch with lean protein and fresh vegetables.',
+      },
+    ];
+  }
+
+  private getMockShoppingListSuggestions() {
+    return {
+      items: [
+        { name: 'Chicken Breast', quantity: '1 lb' },
+        { name: 'Greek Yogurt', quantity: '32 oz' },
+        { name: 'Mixed Berries', quantity: '1 package' },
+        { name: 'Mixed Greens', quantity: '1 bag' },
+      ],
+      suggestions: [
+        'Buy fresh produce at the beginning of the week',
+        'Look for sales on protein sources',
+      ],
+    };
+  }
+
   // Helper methods
 
   private getMockSolution(assignment: Assignment): AISolution {
