@@ -196,7 +196,7 @@ export function CourseworkPage() {
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => setImportDialogOpen(true)} className="flex-1 sm:flex-initial">
             <Download className="mr-2 h-4 w-4" />
-            <span className="hidden sm:inline">Import from Canvas</span>
+            <span className="hidden sm:inline">Import</span>
             <span className="sm:hidden">Import</span>
           </Button>
           <Button onClick={handleAddCourse} className="flex-1 sm:flex-initial">
