@@ -3,7 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 // List of inappropriate words/phrases to filter
 const INAPPROPRIATE_WORDS = [
   'spam', 'scam', 'hack', 'virus', 'malware',
-  // Add more as needed
+  // todo; add more, or pull list from internet
 ];
 
 // List of suspicious patterns
@@ -46,8 +46,8 @@ export const sanitizeMessage = (req: Request, res: Response, next: NextFunction)
 
   // Basic HTML sanitization
   content = content
-    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
-    .replace(/<[^>]*>/g, '') // Remove all HTML tags
+    .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
+    .replace(/<[^>]*>/g, '')
     .trim();
 
   // Check for inappropriate content
@@ -63,7 +63,6 @@ export const sanitizeMessage = (req: Request, res: Response, next: NextFunction)
     });
   }
 
-  // Check for suspicious patterns
   const hasSuspiciousPatterns = SUSPICIOUS_PATTERNS.some(pattern => 
     pattern.test(content)
   );
@@ -76,16 +75,13 @@ export const sanitizeMessage = (req: Request, res: Response, next: NextFunction)
   }
 
   // Additional content filtering
-  // Remove excessive whitespace
   content = content.replace(/\s+/g, ' ').trim();
-
-  // Remove excessive punctuation
   content = content.replace(/[!]{3,}/g, '!!!');
   content = content.replace(/[?]{3,}/g, '???');
 
   // Update the request body with sanitized content
   req.body.content = content;
-  req.body.isModerated = false; // Mark as not moderated initially
+  req.body.isModerated = false;
 
   next();
 };

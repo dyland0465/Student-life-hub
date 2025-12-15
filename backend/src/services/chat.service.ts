@@ -30,9 +30,6 @@ export interface UserChatProfile {
 export class ChatService {
   private db = admin.firestore();
 
-  /**
-   * Generate a random room code (6 characters, alphanumeric)
-   */
   private generateRoomCode(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let result = '';
@@ -42,9 +39,6 @@ export class ChatService {
     return result;
   }
 
-  /**
-   * Generate a random anonymous username
-   */
   private generateAnonymousUsername(): string {
     const adjectives = [
       'Anonymous', 'Student', 'Learner', 'Curious', 'Friendly', 'Helpful',
@@ -89,12 +83,11 @@ export class ChatService {
    */
   async getRoomsByUser(userId: string): Promise<ChatRoom[]> {
     const userDoc = await this.db.collection('users').doc(userId).get();
-    let roomIds: string[] = ['global']; // Always include global room
+    let roomIds: string[] = ['global'];
     
     if (userDoc.exists) {
       const userData = userDoc.data() as any;
       const userRooms = userData.chatRooms || [];
-      // Add user's private rooms, avoiding duplicates
       roomIds = [...new Set([...roomIds, ...userRooms])];
     }
     
@@ -113,7 +106,6 @@ export class ChatService {
    * Create a new private chat room
    */
   async createRoom(userId: string, name: string, customCode?: string): Promise<ChatRoom> {
-    // Check if user has reached max private rooms (10)
     const userRooms = await this.getRoomsByUser(userId);
     const privateRooms = userRooms.filter(room => room.type === 'private');
     
@@ -142,7 +134,6 @@ export class ChatService {
 
     await this.db.collection('chatRooms').doc(roomId).set(room);
     
-    // Add room to user's chatRooms array
     await this.addRoomToUser(userId, roomId);
     
     return room;
@@ -165,7 +156,7 @@ export class ChatService {
     const room = roomDoc.data() as ChatRoom;
 
     if (room.members.includes(userId)) {
-      return room; // Already a member
+      return room;
     }
 
     if (room.members.length >= room.maxMembers) {
@@ -214,7 +205,7 @@ export class ChatService {
   }
 
   /**
-   * Delete a room (only room creator can delete)
+   * Delete a room
    */
   async deleteRoom(userId: string, roomId: string): Promise<void> {
     if (roomId === 'global') {
@@ -271,8 +262,6 @@ export class ChatService {
 
     const room = roomDoc.data() as ChatRoom;
     
-    // For global room, allow anyone to send messages
-    // For private rooms, check membership
     if (room.type === 'private' && !room.members.includes(userId)) {
       throw new Error('Not a member of this room');
     }
@@ -404,7 +393,6 @@ export class ChatService {
   }
 
   private async addRoomToUser(userId: string, roomId: string): Promise<void> {
-    // Don't add global room to user's chatRooms array
     if (roomId === 'global') {
       return;
     }
@@ -424,7 +412,6 @@ export class ChatService {
   }
 
   private async removeRoomFromUser(userId: string, roomId: string): Promise<void> {
-    // Don't remove global room from user's chatRooms array
     if (roomId === 'global') {
       return;
     }
@@ -457,14 +444,12 @@ export class ChatService {
     await batch.commit();
   }
 
-  // Legacy methods for backward compatibility
+  // Legacy method
   async getMessages(): Promise<ChatMessage[]> {
     return this.getRoomMessages('global');
   }
 
   async sendMessage(content: string, username?: string): Promise<ChatMessage> {
-    // For backward compatibility, send to global room
-    // Use a dummy userId for anonymous global chat
     const dummyUserId = 'anonymous_' + Date.now();
     return this.sendMessageToRoom('global', dummyUserId, content, username);
   }

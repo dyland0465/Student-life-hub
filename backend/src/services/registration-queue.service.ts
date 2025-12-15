@@ -56,20 +56,18 @@ export class RegistrationQueueService {
   }
 
   /**
-   * Process registration queue - check if registration is open and attempt registration
+   * Process registration queue
    */
   async processQueue(): Promise<void> {
     const now = new Date();
     
     for (const [queueId, item] of this.queue.entries()) {
-      // Skip if already completed or failed
       if (item.status === 'success' || item.status === 'failed') {
         continue;
       }
 
       // Check if registration date has arrived
       if (now >= item.registrationDate) {
-        // Update status to queued
         if (item.status === 'pending') {
           this.updateQueueItem(queueId, { status: 'queued' });
         }
@@ -104,7 +102,7 @@ export class RegistrationQueueService {
           status: 'success',
         });
       } else {
-        // Retry logic - allow up to 3 attempts
+        // Retry logic
         if (item.attempts < 3) {
           this.updateQueueItem(queueId, {
             status: 'queued',
@@ -142,10 +140,9 @@ export class RegistrationQueueService {
   }
 
   /**
-   * Start periodic queue processing (call this on server startup)
+   * Start periodic queue processing
    */
   startProcessing(intervalMs: number = 60000): void {
-    // Process queue every minute
     setInterval(() => {
       this.processQueue().catch(error => {
         console.error('Error processing registration queue:', error);

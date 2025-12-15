@@ -59,7 +59,6 @@ export class EventAggregationService {
       events.push(...appleEvents);
     }
 
-    // Sort by date and time
     return events.sort((a, b) => {
       const dateCompare = a.date.localeCompare(b.date);
       if (dateCompare !== 0) return dateCompare;

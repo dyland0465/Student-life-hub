@@ -19,8 +19,7 @@ export class LionPathService {
    * Mock connection to LionPath
    */
   connect(userId: string, credentials: LionPathCredentials): boolean {
-    // Mock connection - in real implementation, would validate credentials
-    // For demo purposes, accept any credentials
+    // Mock connection
     if (credentials.username && credentials.password) {
       this.connections.set(userId, true);
       console.log(`Mock LionPath connection established for user ${userId}`);
@@ -48,11 +47,9 @@ export class LionPathService {
    */
   checkRegistrationOpen(semester: string): boolean {
     // Mock: For demo, registration is "open" if current date is after a certain date
-    // In real implementation, would check actual LionPath registration dates
     const now = new Date();
     const registrationDate = new Date(now.getFullYear(), now.getMonth(), 15); // 15th of current month
     
-    // For demo, allow registration if we're past the 15th
     return now >= registrationDate;
   }
 
@@ -70,12 +67,10 @@ export class LionPathService {
       };
     }
 
-    // Simulate registration process
     const registeredSections: string[] = [];
     const failedSections: string[] = [];
 
     for (const section of sections) {
-      // Simulate random success/failure (90% success rate for demo)
       const success = Math.random() > 0.1;
       
       if (success) {

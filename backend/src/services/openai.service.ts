@@ -12,7 +12,7 @@ class OpenAIService {
       this.isConfigured = true;
       console.log('OpenAI service initialized');
     } else {
-      console.warn('OpenAI API key not configured. AI features will use mock data.');
+      console.warn('OpenAI API key not configured.');
     }
   }
 
@@ -30,14 +30,12 @@ class OpenAIService {
     explanation: string;
     steps?: string[];
   }> {
-    // If OpenAI not configured, return mock solution
     if (!this.isConfigured || !this.client) {
       return this.getMockSolution(assignment, config);
     }
 
     try {
-      // Use configured LLM model or default to gpt-3.5-turbo
-      const model = config?.llm || 'gpt-3.5-turbo';
+      const model = config?.llm || 'gemini-3-flash';
       const temperature = config?.temperature ?? 0.7;
       const maxTokens = config?.maxTokens ?? 1000;
       const gradeTarget = config?.gradeTarget || 'A';
@@ -132,7 +130,6 @@ Format as a JSON array with: routineName, duration, type, description`;
 
       const content = response.choices[0].message.content || '';
       
-      // Try to parse JSON, fallback to mock if fails
       try {
         const parsed = JSON.parse(content);
         return Array.isArray(parsed) ? parsed : this.getMockWorkoutRecommendations();
@@ -200,7 +197,7 @@ Format as JSON: { "analysis": "...", "recommendations": ["...", "..."], "score":
     }
   }
 
-  // Helper methods for mock data
+  // Helper methods
   private getMockSolution(assignment: any, config?: any) {
     const gradeTarget = config?.gradeTarget || 'A';
     const model = config?.llm || 'gpt-3.5-turbo';
@@ -445,7 +442,6 @@ Format as JSON: { "items": [{"name": "...", "quantity": "..."}], "suggestions": 
     sections: any[];
     score: number;
   }> {
-    // If OpenAI not configured, return mock schedule
     if (!this.isConfigured || !this.client) {
       return this.getMockSchedule(courses, parameters, userRequirements);
     }
@@ -555,7 +551,6 @@ Format as JSON: { "items": [{"name": "...", "quantity": "..."}], "suggestions": 
       console.error('Error parsing schedule response:', error);
     }
 
-    // Fallback to mock
     return this.getMockSchedule(courses, {}, []);
   }
 
@@ -568,7 +563,7 @@ Format as JSON: { "items": [{"name": "...", "quantity": "..."}], "suggestions": 
 
     for (const course of courses) {
       if (course.sections.length > 0) {
-        // Select first available section (can be improved with actual optimization)
+        // Select first available section
         const section = course.sections[0];
         selectedSections.push({
           courseCode: course.courseCode,

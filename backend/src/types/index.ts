@@ -56,7 +56,7 @@ export interface ClassSchedule {
 export interface ScheduleRequest {
   id: string;
   userId: string;
-  semester: string; // e.g., "Fall 2024"
+  semester: string;
   requiredCourses: string[]; // Course codes user needs
   selectedCourses?: string[]; // Course codes user manually selected
   presetId?: string; // Preset to use
@@ -71,7 +71,7 @@ export interface GeneratedSchedule {
   userId: string;
   sections: SelectedSection[];
   conflicts: ScheduleConflict[];
-  score: number; // Optimization score
+  score: number;
   generatedAt: Date;
 }
 
@@ -97,7 +97,7 @@ export interface RegistrationQueue {
   userId: string;
   scheduleId: string;
   sections: SelectedSection[];
-  registrationDate: Date; // When LionPath opens
+  registrationDate: Date;
   status: 'pending' | 'queued' | 'registering' | 'success' | 'failed';
   lionPathConnected: boolean;
   attempts: number;
@@ -128,8 +128,8 @@ export interface CalendarSyncConfig {
   userId: string;
   googleCalendar?: {
     connected: boolean;
-    accessToken?: string; // Encrypted
-    refreshToken?: string; // Encrypted
+    accessToken?: string;
+    refreshToken?: string;
     calendarId?: string;
     lastSync?: Date;
     syncEnabled: boolean;
@@ -138,7 +138,7 @@ export interface CalendarSyncConfig {
     connected: boolean;
     serverUrl?: string;
     username?: string;
-    password?: string; // Encrypted
+    password?: string;
     calendarName?: string;
     lastSync?: Date;
     syncEnabled: boolean;

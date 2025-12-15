@@ -78,17 +78,36 @@ cd Student-life-hub
 
 2. Configure Frontend
 
-bash
 cd frontend
-cp .env.example .env
-Edit .env with your Firebase credentials
+Create .env file:
+
+Frontend (.env)
+```env
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+VITE_API_URL=http://localhost:3001
+```
 
 
 3. Configure Backend
 
+cd backend
+Create .env file:
 
-cd ../backend
-Create .env file (see backend/readme.md)
+Backend (.env)
+```env
+PORT=3001
+NODE_ENV=development
+FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY="..."
+OPENAI_API_KEY=...
+FRONTEND_URL=http://localhost:5173
+```
 
 
 Add Firebase Admin SDK credentials:
@@ -166,10 +185,6 @@ Frontend
 - **Build Tool**: Vite
 - **UI Library**: ShadCN UI
 - **Styling**: Tailwind CSS
-- **Routing**: React Router v6
-- **State**: React Context API
-- **Forms**: React Hook Form (implicit)
-- **Icons**: Lucide React
 
 Backend
 - **Runtime**: Node.js
@@ -177,19 +192,11 @@ Backend
 - **Language**: TypeScript
 - **Authentication**: Firebase Admin SDK
 - **AI**: OpenAI API
-- **Security**: Helmet, CORS, Rate Limiting
-- **Logging**: Morgan
 
 Services
 - **Authentication**: Firebase Auth
 - **Database**: Cloud Firestore
 - **AI**: OpenAI
-
-Documentation
-
-- **[Frontend README](frontend/README.md)** - Frontend setup and features
-- **[Backend README](backend/README.md)** - API documentation
-- **[SRS Document](SWENG411%20SRS%20Team%20X.pdf)** - Requirements specification
 
 API Endpoints
 
@@ -217,32 +224,6 @@ Body: { "fitnessLevel": "beginner", "goals": [...] }
 ```http
 POST /api/ai/sleep-insights
 Body: { "averageHours": 7, "consistency": 85, "recentLogs": [...] }
-```
-
-See [Backend README](backend/README.md) for complete API documentation.
-
-Environment Variables
-
-Frontend (.env)
-```env
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...
-VITE_API_URL=http://localhost:3001
-```
-
-Backend (.env)
-```env
-PORT=3001
-NODE_ENV=development
-FIREBASE_PROJECT_ID=...
-FIREBASE_CLIENT_EMAIL=...
-FIREBASE_PRIVATE_KEY="..."
-OPENAI_API_KEY=...
-FRONTEND_URL=http://localhost:5173
 ```
 
 Features Roadmap

@@ -5,7 +5,7 @@ import { openAIService } from '../services/openai.service';
 
 const router = express.Router();
 
-// EZSolve - Solve assignment with AI
+// EZSolve
 router.post('/solve-assignment', authenticateUser, ezSolveLimiter, async (req, res, next) => {
   try {
     const { assignment, config } = req.body;

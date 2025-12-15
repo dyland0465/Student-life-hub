@@ -22,15 +22,14 @@ const PORT = process.env.PORT || 3001;
 // Initialize Firebase Admin
 initializeFirebaseAdmin();
 
-// Initialize chat service after Firebase is ready
 const chatService = initializeChatService();
 chatService.initializeGlobalRoom().catch(error => {
   console.error('Failed to initialize global chat room:', error);
 });
 
 // Middleware
-app.use(helmet()); // Security headers
-app.use(morgan('dev')); // Logging
+app.use(helmet());
+app.use(morgan('dev'));
 app.use(cors({
   origin: process.env.FRONTEND_URL || 'http://localhost:5173',
   credentials: true,
@@ -45,8 +44,7 @@ app.use('/api/chat', chatRoutes);
 app.use('/api/schedule', scheduleRoutes);
 app.use('/api/calendar', calendarRoutes);
 
-// Start registration queue processing
-registrationQueueService.startProcessing(60000); // Process every minute
+registrationQueueService.startProcessing(60000);
 
 // Root route
 app.get('/', (req, res) => {

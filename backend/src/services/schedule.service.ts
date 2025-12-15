@@ -17,7 +17,6 @@ export class ScheduleService {
    */
   async generateSchedule(request: ScheduleRequest): Promise<GeneratedSchedule> {
     try {
-      // Resolve prerequisites
       const allRequiredCourses = this.resolvePrerequisites(request.requiredCourses);
 
       // Get all course data
@@ -32,7 +31,6 @@ export class ScheduleService {
       // Get parameters (from preset or direct)
       const parameters = request.parameters || this.getDefaultParameters();
 
-      // Generate schedule using AI
       const generatedSchedule = await openAIService.generateOptimalSchedule(
         courses,
         parameters,
@@ -69,7 +67,7 @@ export class ScheduleService {
   }
 
   /**
-   * Resolve prerequisites - ensure all prerequisite courses are included
+   * Resolve prerequisites
    */
   resolvePrerequisites(courseCodes: string[]): string[] {
     const resolved = new Set<string>();
@@ -158,7 +156,7 @@ export class ScheduleService {
   }
 
   /**
-   * Convert time string (HH:mm) to minutes since midnight
+   * Convert time string (HH:mm) to minutes
    */
   private timeToMinutes(time: string): number {
     const [hours, minutes] = time.split(':').map(Number);

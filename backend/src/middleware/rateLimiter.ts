@@ -1,6 +1,6 @@
 import rateLimit from 'express-rate-limit';
 
-// General API rate limiter
+// API rate limiter
 export const apiLimiter = rateLimit({
   windowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000, // 15 minutes
   max: Number(process.env.RATE_LIMIT_MAX_REQUESTS) || 100,
@@ -9,7 +9,7 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Strict rate limiter for AI endpoints (more expensive operations)
+// Strict rate limiter for AI endpoints
 export const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20, // Max 20 AI requests per 15 minutes
@@ -19,10 +19,10 @@ export const aiLimiter = rateLimit({
   skipSuccessfulRequests: false,
 });
 
-// Per-user rate limiter for EZSolve (prevent abuse)
+// Per-user rate limiter for EZSolve
 export const ezSolveLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
-  max: 10, // Max 10 EZSolve requests per hour per user
+  max: 10, // Max 10
   message: 'EZSolve limit reached. You can make 10 requests per hour.',
   standardHeaders: true,
   legacyHeaders: false,
@@ -32,10 +32,10 @@ export const ezSolveLimiter = rateLimit({
   },
 });
 
-// Rate limiter for chat messages (prevent spam)
+// Rate limiter for chat messages
 export const chatLimiter = rateLimit({
   windowMs: 60 * 1000, // 1 minute
-  max: 10, // Max 10 messages per minute per IP
+  max: 10, // Max 10 messages
   message: 'Too many chat messages. Please slow down.',
   standardHeaders: true,
   legacyHeaders: false,

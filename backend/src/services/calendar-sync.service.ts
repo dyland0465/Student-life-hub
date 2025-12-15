@@ -1,15 +1,12 @@
 import admin from '../config/firebase';
 import type { Event, CalendarSyncConfig } from '../types';
 
-// Simple encryption/decryption (in production, use a proper encryption library)
+// Simple encryption/decryption (not secure at all, but good enough for this project)
 function encrypt(text: string, key: string): string {
-  // For production, use crypto.createCipher or a library like 'crypto-js'
-  // This is a placeholder implementation
   return Buffer.from(text).toString('base64');
 }
 
 function decrypt(encryptedText: string, key: string): string {
-  // For production, use crypto.createDecipher or a library like 'crypto-js'
   return Buffer.from(encryptedText, 'base64').toString('utf-8');
 }
 
@@ -120,7 +117,6 @@ export class CalendarSyncService {
         throw new Error('Failed to get sync config');
       }
 
-      // Encrypt tokens before storing
       const encryptedAccessToken = encrypt(accessToken, this.encryptionKey);
       const encryptedRefreshToken = encrypt(refreshToken, this.encryptionKey);
 
@@ -158,7 +154,6 @@ export class CalendarSyncService {
         throw new Error('Failed to get sync config');
       }
 
-      // Encrypt password before storing
       const encryptedPassword = encrypt(password, this.encryptionKey);
 
       await this.updateSyncConfig(userId, {
@@ -223,10 +218,9 @@ export class CalendarSyncService {
         throw new Error('Google Calendar not connected');
       }
 
-      // Decrypt token
       const accessToken = decrypt(config.googleCalendar.accessToken, this.encryptionKey);
       
-      // This is a placeholder that stores events as synced
+      // placeholder
       let syncedCount = 0;
       
       for (const event of events) {
@@ -268,7 +262,6 @@ export class CalendarSyncService {
         throw new Error('Google Calendar not connected');
       }
 
-      // Decrypt token
       const accessToken = decrypt(config.googleCalendar.accessToken, this.encryptionKey);
       
       // TODO: Implement actual Google Calendar API integration
@@ -289,7 +282,7 @@ export class CalendarSyncService {
   }
 
   /**
-   * Push events to Apple Calendar (CalDAV)
+   * Push events to Apple Calendar
    */
   async pushToAppleCalendar(userId: string, events: Event[]): Promise<number> {
     try {
@@ -298,7 +291,6 @@ export class CalendarSyncService {
         throw new Error('Apple Calendar not connected');
       }
 
-      // Decrypt password
       const password = decrypt(config.appleCalendar.password, this.encryptionKey);
       
       let syncedCount = 0;
@@ -333,7 +325,7 @@ export class CalendarSyncService {
   }
 
   /**
-   * Pull events from Apple Calendar (CalDAV)
+   * Pull events from Apple Calendar
    */
   async pullFromAppleCalendar(userId: string): Promise<Event[]> {
     try {
@@ -342,7 +334,6 @@ export class CalendarSyncService {
         throw new Error('Apple Calendar not connected');
       }
 
-      // Decrypt password
       const password = decrypt(config.appleCalendar.password, this.encryptionKey);
       
       // TODO: Implement actual CalDAV integration

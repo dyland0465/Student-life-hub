@@ -143,10 +143,8 @@ router.post('/rooms/:roomId/send', async (req: Request, res: Response, next: Nex
     // For global room, allow anonymous users
     // For private rooms, require authentication
     if (roomId === 'global') {
-      // Skip authentication for global room
       return next();
     } else {
-      // Require authentication for private rooms
       return authenticateUser(req, res, next);
     }
   } catch (error: any) {
@@ -177,7 +175,6 @@ router.post('/rooms/:roomId/send', async (req: Request, res: Response, next: Nex
 });
 
 /**
- * PUT /api/chat/rooms/:roomId
  * Update room name and code
  */
 router.put('/rooms/:roomId', authenticateUser, async (req: Request, res: Response) => {
@@ -198,7 +195,6 @@ router.put('/rooms/:roomId', authenticateUser, async (req: Request, res: Respons
 });
 
 /**
- * DELETE /api/chat/rooms/:roomId/leave
  * Leave a room
  */
 router.delete('/rooms/:roomId/leave', authenticateUser, async (req: Request, res: Response) => {
@@ -214,8 +210,7 @@ router.delete('/rooms/:roomId/leave', authenticateUser, async (req: Request, res
 });
 
 /**
- * DELETE /api/chat/rooms/:roomId
- * Delete a room (only room creator can delete)
+ * Delete a room
  */
 router.delete('/rooms/:roomId', authenticateUser, async (req: Request, res: Response) => {
   try {
@@ -230,7 +225,6 @@ router.delete('/rooms/:roomId', authenticateUser, async (req: Request, res: Resp
 });
 
 /**
- * POST /api/chat/rooms/:roomId/invite
  * Invite user to room
  */
 router.post('/rooms/:roomId/invite', authenticateUser, async (req: Request, res: Response) => {
@@ -251,7 +245,6 @@ router.post('/rooms/:roomId/invite', authenticateUser, async (req: Request, res:
 });
 
 /**
- * GET /api/chat/profile
  * Get user's chat profile
  */
 router.get('/profile', authenticateUser, async (req: Request, res: Response) => {
@@ -265,7 +258,6 @@ router.get('/profile', authenticateUser, async (req: Request, res: Response) => 
 });
 
 /**
- * PUT /api/chat/profile
  * Update user's chat display name
  */
 router.put('/profile', authenticateUser, async (req: Request, res: Response) => {
@@ -284,10 +276,8 @@ router.put('/profile', authenticateUser, async (req: Request, res: Response) => 
   }
 });
 
-// Legacy endpoints for backward compatibility
 /**
- * GET /api/chat/messages
- * Get all chat messages (legacy - redirects to global room)
+ * GET /api/chat/messages (legacy)
  */
 router.get('/messages', async (req: Request, res: Response) => {
   try {
@@ -300,8 +290,7 @@ router.get('/messages', async (req: Request, res: Response) => {
 });
 
 /**
- * POST /api/chat/send
- * Send a new chat message (legacy - sends to global room)
+ * Send a new chat message (legacy)
  */
 router.post('/send', chatLimiter, validateMessage, sanitizeMessage, async (req: Request, res: Response) => {
   try {
