@@ -2,7 +2,6 @@ Student Life Hub
 
 A web application to help students manage their academic life, health, fitness, and sleep - powered by AI.
 
-
 Coursework Management
 - Create and organize courses
 - Track assignments with due dates
@@ -22,7 +21,7 @@ Sleep Tracking
 - AI sleep insights and recommendations
 
 AI-Powered Features
-- **EZSolve** - Homework help
+- EZSolve - Homework help
 - Smart fitness recommendations
 - Sleep pattern analysis
 - Personalized insights
@@ -32,35 +31,6 @@ Authentication
 - Google OAuth sign-in
 - Secure Firebase authentication
 - User profiles with major and year
-
-Architecture
-
-
-┌─────────────────────────────────────────────────────────┐
-│                    Frontend (React)                      │
-│  - React 18 + TypeScript + Vite                         │
-│  - ShadCN UI + Tailwind CSS                             │
-│  - React Router + Context API                           │
-│  - Responsive Design + Dark Mode                        │
-└────────────┬────────────────────────────────────────────┘
-             │
-             │ HTTP/HTTPS
-             │
-┌────────────▼────────────────────────────────────────────┐
-│                Backend API (Express)                     │
-│  - Node.js + TypeScript                                 │
-│  - Rate Limiting + CORS                                 │
-│  - Firebase Auth Verification                           │
-│  - OpenAI Integration                                   │
-└────────────┬────────────────────────────────────────────┘
-             │
-       ┌─────┴──────┐
-       │            │
-   ┌───▼───┐    ┌──▼────┐
-   │Firebase│    │OpenAI │
-   │Auth/DB │    │  API  │
-   └────────┘    └───────┘
-
 
 Quick Start
 
@@ -78,7 +48,6 @@ cd Student-life-hub
 
 2. Configure Frontend
 
-bash
 cd frontend
 cp .env.example .env
 Edit .env with your Firebase credentials
@@ -122,40 +91,6 @@ npm run dev
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:3001
 - **API Health**: http://localhost:3001/api/health
-
-Project Structure
-
-
-Student-life-hub/
-├── frontend/                  # React application
-│   ├── src/
-│   │   ├── components/       # React components
-│   │   │   ├── ui/          # ShadCN UI components
-│   │   │   ├── auth/        # Auth components
-│   │   │   ├── coursework/  # Coursework features
-│   │   │   ├── health/      # Fitness features
-│   │   │   ├── sleep/       # Sleep tracking
-│   │   │   └── layout/      # Layout components
-│   │   ├── pages/           # Page components
-│   │   ├── lib/             # Utilities & services
-│   │   ├── hooks/           # Custom React hooks
-│   │   ├── types/           # TypeScript types
-│   │   └── contexts/        # React contexts
-│   ├── public/              # Static assets
-│   └── package.json
-│
-├── backend/                  # Express API
-│   ├── src/
-│   │   ├── routes/          # API routes
-│   │   ├── services/        # Business logic
-│   │   ├── middleware/      # Express middleware
-│   │   ├── config/          # Configuration
-│   │   └── server.ts        # Entry point
-│   └── package.json
-│
-├── start.bat                # Windows startup script
-├── DEPLOYMENT.md            # Deployment guide
-└── README.md               # This file
 
 
 Tech Stack
