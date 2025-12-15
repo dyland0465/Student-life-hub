@@ -277,7 +277,7 @@ export function RoomSettingsDialog({
                     </div>
                   </div>
 
-                  {/* Delete Room - Only for creators */}
+                  {/* Delete Room */}
                   {isCreator && (
                     <div className="rounded-lg border border-destructive/50 bg-destructive/5 p-4">
                       <div className="flex items-start justify-between gap-4">

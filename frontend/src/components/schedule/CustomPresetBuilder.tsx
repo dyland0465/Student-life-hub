@@ -15,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import type { ScheduleParameters } from '@/types';
-// Using range input instead of slider component
 
 interface CustomPresetBuilderProps {
   open: boolean;

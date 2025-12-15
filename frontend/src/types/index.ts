@@ -40,8 +40,8 @@ export interface FitnessRoutine {
   id: string;
   userId: string;
   routineName: string;
-  duration: number; // in minutes
-  type: string; // e.g., "Cardio", "Strength", "Yoga"
+  duration: number;
+  type: string;
   description?: string;
   createdAt: Date;
 }
@@ -180,7 +180,7 @@ export interface ScheduleParameters {
 // Course Catalog Types
 export interface ScheduleCourse {
   id: string;
-  courseCode: string; // e.g., "CMPSC 131"
+  courseCode: string; 
   courseName: string;
   credits: number;
   prerequisites: string[]; // Course codes
@@ -213,7 +213,7 @@ export interface ClassSchedule {
 export interface ScheduleRequest {
   id: string;
   userId: string;
-  semester: string; // e.g., "Fall 2024"
+  semester: string;
   requiredCourses: string[]; // Course codes user needs
   selectedCourses?: string[]; // Course codes user manually selected
   presetId?: string; // Preset to use
@@ -228,7 +228,7 @@ export interface GeneratedSchedule {
   userId: string;
   sections: SelectedSection[];
   conflicts: ScheduleConflict[];
-  score: number; // Optimization score
+  score: number;
   generatedAt: Date;
 }
 
@@ -254,7 +254,7 @@ export interface RegistrationQueue {
   userId: string;
   scheduleId: string;
   sections: SelectedSection[];
-  registrationDate: Date; // When LionPath opens
+  registrationDate: Date;
   status: 'pending' | 'queued' | 'registering' | 'success' | 'failed';
   lionPathConnected: boolean;
   attempts: number;

@@ -237,7 +237,7 @@ export function ScheduleBuilderPage() {
 
     try {
       const registrationDate = new Date();
-      registrationDate.setDate(registrationDate.getDate() + 7); // 7 days from now
+      registrationDate.setDate(registrationDate.getDate() + 7);
 
       await api.addToRegistrationQueue(
         generatedSchedule.id,

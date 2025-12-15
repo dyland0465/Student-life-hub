@@ -23,8 +23,6 @@ export function GoogleCalendarConnect({ config, onConfigChange }: GoogleCalendar
     try {
       setConnecting(true);
       
-      // In a real implementation, this would redirect to Google OAuth
-      // For now, we'll show a placeholder message
       toast({
         title: 'Google Calendar Connection',
         description: 'OAuth flow not yet implemented. Please provide access token manually for now.',

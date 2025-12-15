@@ -62,7 +62,7 @@ export function PresetSelector({
         </div>
       </div>
 
-      {/* Custom Presets (Pro only) */}
+      {/* Custom Presets */}
       {isPro && (
         <div>
           <div className="flex items-center justify-between mb-2">

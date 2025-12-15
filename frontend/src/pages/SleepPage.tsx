@@ -151,7 +151,7 @@ export function SleepPage() {
         </Card>
       </div>
 
-      {/* AI Sleep Insights */}
+      {/* Sleep Insights */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

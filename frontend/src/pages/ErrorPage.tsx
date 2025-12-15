@@ -21,7 +21,6 @@ export function ErrorPage({ errorType: propErrorType, message: propMessage }: Er
   const [retryCount, setRetryCount] = useState(0);
   const [isRetrying, setIsRetrying] = useState(false);
 
-  // Get error info from location state or props
   const locationState = location.state as LocationState | null;
   const errorType = locationState?.errorType || propErrorType || 'unknown';
   const message = locationState?.message || propMessage;
@@ -80,10 +79,8 @@ export function ErrorPage({ errorType: propErrorType, message: propMessage }: Er
     setIsRetrying(true);
     setRetryCount((prev) => prev + 1);
 
-    // Wait a bit before retrying to show loading state
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    // Try to reload the page
     window.location.reload();
   };
 

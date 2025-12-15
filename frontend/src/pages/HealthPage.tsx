@@ -160,8 +160,6 @@ export function HealthPage() {
 
   function handleCreateListFromSuggestions() {
     if (!shoppingSuggestions) return;
-    // This will be handled by opening the dialog with pre-filled items
-    // For now, we'll just show the suggestions
   }
 
   if (loading) {
@@ -410,7 +408,7 @@ export function HealthPage() {
                 </Card>
               </div>
 
-              {/* AI Meal Recommendations */}
+              {/* Meal Recommendations */}
               <Card className="mb-6">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -474,10 +472,7 @@ export function HealthPage() {
                               size="sm"
                               variant="outline"
                               onClick={() => {
-                                // Pre-fill meal dialog with recommendation
                                 setMealDialogOpen(true);
-                                // Note: We'd need to pass the recommendation data to MealDialog
-                                // For now, user can manually enter
                               }}
                             >
                               Add to Log
@@ -527,7 +522,7 @@ export function HealthPage() {
               </div>
             </CardHeader>
             <CardContent>
-              {/* AI Shopping List Suggestions */}
+              {/* Shopping List Suggestions */}
               <Card className="mb-6">
                 <CardHeader>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -585,10 +580,7 @@ export function HealthPage() {
                       <Button
                         className="w-full"
                         onClick={() => {
-                          // Create a new shopping list with suggested items
                           setShoppingListDialogOpen(true);
-                          // Note: We'd need to pass the items to ShoppingListDialog
-                          // For now, user can manually create and reference suggestions
                         }}
                       >
                         <Plus className="mr-2 h-4 w-4" />

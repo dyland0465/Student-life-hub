@@ -26,22 +26,18 @@ export function LandingPage() {
     let timeout: ReturnType<typeof setTimeout>;
 
     if (!isDeleting && displayedText.length < currentWord.length) {
-      // Typing out the word
       timeout = setTimeout(() => {
         setDisplayedText(currentWord.slice(0, displayedText.length + 1));
-      }, 100); // Typing speed
+      }, 100);
     } else if (!isDeleting && displayedText.length === currentWord.length) {
-      // Word is fully typed, wait before deleting
       timeout = setTimeout(() => {
         setIsDeleting(true);
-      }, 5000); // Pause at end of word
+      }, 5000);
     } else if (isDeleting && displayedText.length > 0) {
-      // Deleting the word
       timeout = setTimeout(() => {
         setDisplayedText(currentWord.slice(0, displayedText.length - 1));
-      }, 50); // Deleting speed (faster than typing)
+      }, 50);
     } else if (isDeleting && displayedText.length === 0) {
-      // Word is fully deleted, move to next word
       setIsDeleting(false);
       setCurrentWordIndex((prev) => (prev + 1) % rotatingWords.length);
     }

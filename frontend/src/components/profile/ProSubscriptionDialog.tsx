@@ -69,7 +69,6 @@ export function ProSubscriptionDialog({ open, onOpenChange }: ProSubscriptionDia
     setLoading(true);
 
     try {
-      // Simulate payment processing delay
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       // Update Firestore user document
@@ -83,7 +82,6 @@ export function ProSubscriptionDialog({ open, onOpenChange }: ProSubscriptionDia
         description: 'Your Pro subscription has been activated. Enjoy all the premium features!',
       });
 
-      // Close dialog after a short delay to show success
       setTimeout(() => {
         onOpenChange(false);
         // Reload the page to refresh the student profile

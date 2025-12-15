@@ -132,7 +132,7 @@ export function WorkoutPage() {
         </Card>
       </div>
 
-      {/* AI Recommendations */}
+      {/* Fitness Recommendations */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

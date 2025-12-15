@@ -81,7 +81,7 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
 
     setEzSolveOpen(true);
     setError(undefined);
-    setEzSolveState('idle'); // Start in idle state to show configuration
+    setEzSolveState('idle');
     setAiSolution(null);
   }
 
@@ -94,12 +94,12 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
     try {
       // State 1: Sending task to LLM model
       setEzSolveState('sending');
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // State 2: Parsing best response from LLM
       setEzSolveState('parsing');
       const solution = await aiService.solveAssignment(assignment, ezSolveConfig);
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate parsing delay
+      await new Promise(resolve => setTimeout(resolve, 800));
 
       setAiSolution(solution);
 
@@ -110,8 +110,7 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
                      assignment.description?.toLowerCase().includes('test');
       
       if (isQuiz && ezSolveConfig.waitTimeBeforeSubmission && ezSolveConfig.waitTimeBeforeSubmission > 0) {
-        // Wait for the specified time (or random time if configured)
-        const waitTime = ezSolveConfig.waitTimeBeforeSubmission * 1000; // Convert to milliseconds
+        const waitTime = ezSolveConfig.waitTimeBeforeSubmission * 1000;
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
 
@@ -136,7 +135,6 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
       // State 4: Submitting assignment
       setEzSolveState('submitting');
 
-      // Mark assignment as AI-solved and completed
       const coursesRef = collection(db, 'courses');
       const q = query(coursesRef, where('userId', '==', currentUser.uid));
       const snapshot = await getDocs(q);
@@ -156,12 +154,10 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
             updatedAt: new Date(),
           });
 
-          await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate submission delay
+          await new Promise(resolve => setTimeout(resolve, 1000));
 
           // State 5: Done!
           setEzSolveState('done');
-          // Don't call onUpdate() here - let it be called when user closes the modal
-          // This prevents the modal from auto-closing due to re-renders
 
           toast({
             title: 'Success',
@@ -194,8 +190,6 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
     setEzSolveState('idle');
     setAiSolution(null);
     setError(undefined);
-    // Update the parent component when modal is closed
-    // This ensures the assignment list is refreshed after completion
     onUpdate();
   }
 
@@ -269,9 +263,8 @@ export function AssignmentCard({ assignment, courseName, onUpdate }: AssignmentC
       <EZSolveProgressModal
         open={ezSolveOpen}
         onOpenChange={(newOpen) => {
-          // Prevent closing when in 'done' state - only allow closing via Close button
           if (!newOpen && ezSolveState === 'done') {
-            return; // Don't close if trying to close and state is 'done'
+            return;
           }
           setEzSolveOpen(newOpen);
         }}

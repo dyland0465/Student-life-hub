@@ -24,7 +24,7 @@ export async function checkFirebaseConnection(): Promise<boolean> {
       return false;
     }
 
-    // Try a simple Firestore read operation (with timeout)
+    // Try a simple Firestore read operation
     const timeoutPromise = new Promise<boolean>((_, reject) =>
       setTimeout(() => reject(new Error('Firebase connection timeout')), 5000)
     );
@@ -32,18 +32,15 @@ export async function checkFirebaseConnection(): Promise<boolean> {
     const checkPromise = getDoc(doc(db, '_health', 'check'))
       .then(() => true)
       .catch((error) => {
-        // Check if it's a permission error (which means Firebase is reachable)
-        // or a network error (which means Firebase is not reachable)
+
         const errorMessage = error?.message?.toLowerCase() || '';
         if (
           errorMessage.includes('permission') ||
           errorMessage.includes('missing') ||
           errorMessage.includes('not found')
         ) {
-          // Document doesn't exist but Firestore is reachable
           return true;
         }
-        // Network or other errors mean Firebase is not reachable
         throw error;
       });
 
@@ -136,7 +133,7 @@ export function getErrorMessage(error: Error | unknown): string {
 }
 
 /**
- * Comprehensive error detection and classification
+ * Error detection and classification
  */
 export async function detectError(): Promise<ErrorInfo | null> {
   // First check network

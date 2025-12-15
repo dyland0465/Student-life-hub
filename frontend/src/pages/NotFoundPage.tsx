@@ -17,7 +17,6 @@ export function NotFoundPage() {
 
   // Konami code detection
   useEffect(() => {
-    // Don't listen for Konami code if game is already open
     if (showSnakeGame) return;
 
     const konamiSequence = [
@@ -38,7 +37,6 @@ export function NotFoundPage() {
           setShowSnakeGame(true);
           setKonamiCode([]);
         } else {
-          // Reset if sequence doesn't match
           setKonamiCode(newSequence.slice(-konamiSequence.length + 1));
         }
       }
@@ -90,7 +88,7 @@ export function NotFoundPage() {
               <Alert className="border-primary bg-primary/10 animate-bounce">
                 <Sparkles className="h-4 w-4 text-primary" />
                 <AlertDescription className="text-primary font-semibold">
-                  🎉 Easter Egg Found! You clicked 404 ten times! You're clearly very persistent. 
+                  Easter Egg Found! You clicked 404 ten times! You're clearly very persistent. 
                   Here's a virtual cookie: 🍪
                 </AlertDescription>
               </Alert>
@@ -100,7 +98,7 @@ export function NotFoundPage() {
               <Alert className="border-primary bg-primary/10 animate-pulse">
                 <Rocket className="h-4 w-4 text-primary" />
                 <AlertDescription className="text-primary font-semibold">
-                  🚀 KONAMI CODE ACTIVATED! 🎮
+                  KONAMI CODE ACTIVATED! 🎮
                 </AlertDescription>
               </Alert>
             )}

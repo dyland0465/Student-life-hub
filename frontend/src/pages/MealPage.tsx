@@ -145,7 +145,7 @@ export function MealPage() {
         </Card>
       </div>
 
-      {/* AI Meal Recommendations */}
+      {/* Meal Recommendations */}
       <Card>
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

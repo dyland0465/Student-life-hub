@@ -136,7 +136,7 @@ export function EZSolveProgressModal({
   });
   const [configOpen, setConfigOpen] = useState(false);
 
-  // Check if assignment is a quiz (case-insensitive check)
+  // Check if assignment is a quiz
   const isQuiz = assignment.title.toLowerCase().includes('quiz') || 
                  assignment.description?.toLowerCase().includes('quiz') ||
                  assignment.title.toLowerCase().includes('test') ||
@@ -156,13 +156,11 @@ export function EZSolveProgressModal({
       <DialogContent 
         className={`max-w-2xl max-h-[90vh] overflow-y-auto ${state === 'done' ? '[&>button]:hidden' : ''}`}
         onInteractOutside={(e) => {
-          // Prevent closing by clicking outside when in 'done' state
           if (state === 'done') {
             e.preventDefault();
           }
         }}
         onEscapeKeyDown={(e) => {
-          // Prevent closing with Escape key when in 'done' state
           if (state === 'done') {
             e.preventDefault();
           }
@@ -176,7 +174,7 @@ export function EZSolveProgressModal({
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Configuration Section (shown when idle) */}
+          {/* Configuration Section */}
           {state === 'idle' && (
             <>
               <Card className="border-primary/50">
@@ -214,7 +212,7 @@ export function EZSolveProgressModal({
                           <SelectItem value="claude-4-5-haiku">Claude 4.5 Haiku (Fast, Cost-effective)</SelectItem>
                           <SelectItem value="claude-4-5-sonnet">Claude 4.5 Sonnet (Balanced)</SelectItem>
                           <SelectItem value="claude-4-5-opus">Claude 4.5 Opus (Latest, Best Quality)</SelectItem>
-                          {/* Google Gemini Models */}
+                          {/* Google Models */}
                           <SelectItem value="gemini-fast">Gemini Fast (Balanced)</SelectItem>
                           <SelectItem value="gemini-3-pro">Gemini 3 Pro (Latest, Best Quality)</SelectItem>
                         </SelectContent>
@@ -241,7 +239,7 @@ export function EZSolveProgressModal({
                       </Select>
                     </div>
 
-                    {/* Wait Time Before Submission (only for quizzes) */}
+                    {/* Wait Time Before Submission */}
                     {isQuiz && (
                       <div className="space-y-2">
                         <Label htmlFor="wait-time">Random Wait Time Before Submission (seconds)</Label>
@@ -263,7 +261,7 @@ export function EZSolveProgressModal({
                       </div>
                     )}
 
-                    {/* Quiz Password (only for quizzes) */}
+                    {/* Quiz Password */}
                     {isQuiz && (
                       <div className="space-y-2">
                         <Label htmlFor="quiz-password">Quiz Password/Code (if required)</Label>
@@ -335,7 +333,7 @@ export function EZSolveProgressModal({
             </Card>
           )}
 
-          {/* Solution Preview (State 3: Awaiting Approval) */}
+          {/* Solution Preview State 3 */}
           {state === 'awaiting_approval' && solution && (
             <Card className="border-primary/50">
               <CardContent className="pt-6 space-y-4">
@@ -395,7 +393,7 @@ export function EZSolveProgressModal({
             </Card>
           )}
 
-          {/* Success Message (State 5: Done) */}
+          {/* Success Message State 5 */}
           {state === 'done' && (
             <Card className="border-green-500/50 bg-green-50 dark:bg-green-950">
               <CardContent className="pt-6">
@@ -418,7 +416,7 @@ export function EZSolveProgressModal({
             </Card>
           )}
 
-          {/* Cancel Button (for states that allow cancellation) */}
+          {/* Cancel Button */}
           {state !== 'done' && state !== 'awaiting_approval' && state !== 'error' && (
             <Button
               onClick={onReject}

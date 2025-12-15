@@ -27,7 +27,7 @@ export function DashboardPage() {
     if (!currentUser) return;
 
     try {
-      // Load upcoming assignments (next 7 days)
+      // Load upcoming assignments
       const coursesRef = collection(db, 'courses');
       const coursesQuery = query(coursesRef, where('userId', '==', currentUser.uid));
       const coursesSnapshot = await getDocs(coursesQuery);

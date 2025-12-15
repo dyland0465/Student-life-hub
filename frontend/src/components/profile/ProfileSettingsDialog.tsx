@@ -84,7 +84,7 @@ export function ProfileSettingsDialog({ open, onOpenChange }: ProfileSettingsDia
       const defaultPhoto = 'https://cdn.nba.com/headshots/nba/latest/1040x760/2544.png';
       const finalPhotoURL = photoURL.trim() || defaultPhoto;
 
-      // Update Firebase Auth profile (display name and photo)
+      // Update Firebase Auth profile
       await updateProfile(currentUser, {
         displayName: name,
         photoURL: finalPhotoURL,

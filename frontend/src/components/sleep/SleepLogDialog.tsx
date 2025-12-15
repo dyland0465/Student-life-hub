@@ -37,7 +37,6 @@ export function SleepLogDialog({ open, onOpenChange, onSave }: SleepLogDialogPro
     const bedDate = new Date(`2000-01-01T${bed}`);
     let wakeDate = new Date(`2000-01-01T${wake}`);
     
-    // If wake time is earlier than bed time, add a day
     if (wakeDate <= bedDate) {
       wakeDate = new Date(`2000-01-02T${wake}`);
     }
