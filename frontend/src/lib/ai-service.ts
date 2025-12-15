@@ -21,7 +21,6 @@ class AIService {
       };
     } catch (error) {
       console.error('Error calling backend API:', error);
-      // Fallback to mock solution on error
       return this.getMockSolution(assignment);
     }
   }
@@ -45,7 +44,6 @@ class AIService {
       }));
     } catch (error) {
       console.error('Error getting workout recommendations:', error);
-      // Fallback to mock recommendations
       return this.getMockWorkoutRecommendations();
     }
   }
@@ -55,19 +53,19 @@ class AIService {
       {
         id: 'ai-rec-1',
         userId: '',
-        routineName: 'AI-Recommended Morning Cardio',
+        routineName: 'Morning Cardio',
         duration: 30,
         type: 'Cardio',
-        description: 'Start your day with energy! Based on your profile, this routine is perfect.',
+        description: 'Start your day with energy with a quick, structured routine.',
         createdAt: new Date(),
       },
       {
         id: 'ai-rec-2',
         userId: '',
-        routineName: 'AI-Recommended Strength Training',
+        routineName: 'Strength Training',
         duration: 45,
         type: 'Strength',
-        description: 'Build muscle and improve overall fitness with this AI-optimized routine.',
+        description: 'Build muscle and improve overall fitness with a balanced session.',
         createdAt: new Date(),
       },
     ];
@@ -78,7 +76,7 @@ class AIService {
       return {
         type: 'sleep',
         title: 'Start Tracking Your Sleep',
-        message: 'Begin logging your sleep to get AI-powered insights!',
+        message: 'Begin logging your sleep to get insights.',
         recommendations: ['Log your bedtime and wake time daily', 'Aim for consistent sleep schedule'],
       };
     }
@@ -113,13 +111,12 @@ class AIService {
 
 
   async getStudySchedule(_courses: any[], assignments: Assignment[]): Promise<any> {
-    // Placeholder for AI-powered study schedule
     const upcomingAssignments = assignments
       .filter(a => a.status === 'pending')
       .sort((a, b) => a.dueDate.getTime() - b.dueDate.getTime());
 
     return {
-      message: 'AI-optimized study schedule',
+      message: 'Suggested study schedule',
       schedule: upcomingAssignments.slice(0, 5).map(assignment => ({
         assignment: assignment.title,
         recommendedTime: '2 hours',
@@ -199,12 +196,11 @@ class AIService {
   }
 
   // Helper methods
-
   private getMockSolution(assignment: Assignment): AISolution {
     return {
       assignmentId: assignment.id,
-      solution: `Here's an AI-generated guide for "${assignment.title}":\n\n1. **Understanding the Problem**: Break down the assignment into smaller, manageable parts.\n\n2. **Research**: Gather relevant information from your textbooks, notes, and reliable online sources.\n\n3. **Plan Your Approach**: Outline the steps you'll take to complete the assignment.\n\n4. **Execute**: Work through each step methodically.\n\n5. **Review**: Double-check your work for accuracy and completeness.\n\n**Note**: This is a demo solution. Configure your OpenAI API key for real AI-powered assistance!`,
-      explanation: 'This is a demonstration of the EZSolve feature. Add your OpenAI API key to get real AI-powered homework assistance.',
+      solution: `Here's a quick guide for "${assignment.title}":\n\n1. Break the assignment into smaller parts.\n2. Review your notes and source material.\n3. Outline the steps you need to take.\n4. Work through each step carefully.\n5. Double-check your work.\n\nThis is demo content. Add an OpenAI API key for live responses.`,
+      explanation: 'Demo response. Configure an OpenAI API key for live solutions.',
       steps: [
         'Understand the requirements',
         'Break down the problem',

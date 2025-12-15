@@ -206,8 +206,8 @@ Format as JSON: { "analysis": "...", "recommendations": ["...", "..."], "score":
     const model = config?.llm || 'gpt-3.5-turbo';
     
     return {
-      solution: `Here's an AI-generated guide for "${assignment.title}":\n\n**Understanding the Problem:**\nBreak down the assignment into smaller, manageable parts. Identify the key concepts and requirements.\n\n**Research & Planning:**\nGather relevant information from your textbooks, lecture notes, and reliable online sources. Create an outline of your approach.\n\n**Step-by-Step Approach:**\n1. Review the relevant course material\n2. Identify the core concepts being tested\n3. Break down complex problems into simpler components\n4. Work through each component systematically\n5. Verify your understanding at each step\n\n**Grade Target: ${gradeTarget}**\n${gradeTarget === 'A' ? 'Focus on thoroughness and excellence in your approach.' : gradeTarget === 'B' ? 'Ensure solid understanding and correct application.' : 'Ensure basic competency and correct approach.'}\n\n**Tips for Success:**\n- Start early to give yourself time to think\n- Don't hesitate to ask your professor or TA for clarification\n- Study with classmates to gain different perspectives\n- Practice similar problems to reinforce your understanding\n\n**Academic Integrity Note:**\nUse this guide to understand the concepts and approach. Make sure to complete the work yourself and cite any sources you use.`,
-      explanation: `Demo solution - Configure OpenAI API key for personalized AI assistance (Model: ${model})`,
+      solution: `Here's a starter guide for "${assignment.title}":\n\n1. Review the requirements and break them into smaller tasks.\n2. Check notes or references for the main concepts.\n3. Outline the approach you want to take.\n4. Work through each step and keep track of assumptions.\n5. Re-read and test your work before submitting.\n\nGrade target: ${gradeTarget}. This is demo content; add an OpenAI API key for live responses.`,
+      explanation: `Demo solution (model: ${model}). Add an OpenAI API key for live output.`,
       steps: [
         'Understand the requirements',
         'Break down the problem',

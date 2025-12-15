@@ -36,7 +36,6 @@ export function EZSolveDialog({ open, onOpenChange, assignment, solution }: EZSo
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Academic Integrity Notice */}
           <div className="rounded-lg bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 p-4">
             <div className="flex items-start gap-3">
               <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
@@ -53,7 +52,6 @@ export function EZSolveDialog({ open, onOpenChange, assignment, solution }: EZSo
             </div>
           </div>
 
-          {/* Assignment Details */}
           <div className="space-y-2">
             <h3 className="font-semibold">Assignment Details</h3>
             <div className="text-sm space-y-1">
@@ -67,7 +65,6 @@ export function EZSolveDialog({ open, onOpenChange, assignment, solution }: EZSo
 
           <Separator />
 
-          {/* AI Solution */}
           <div className="space-y-3">
             <h3 className="font-semibold flex items-center gap-2">
               <Sparkles className="h-4 w-4 text-primary" />
@@ -96,7 +93,6 @@ export function EZSolveDialog({ open, onOpenChange, assignment, solution }: EZSo
 
           <Separator />
 
-          {/* Metadata */}
           <div className="text-xs text-muted-foreground">
             <p>Generated: {format(solution.generatedAt, 'PPP p')}</p>
             <p className="mt-1">{solution.explanation}</p>
