@@ -2,6 +2,7 @@ Student Life Hub
 
 A web application to help students manage their academic life, health, fitness, and sleep - powered by AI.
 
+
 Coursework Management
 - Create and organize courses
 - Track assignments with due dates
@@ -39,25 +40,39 @@ Prerequisites
 - Firebase project created
 - OpenAI API key (optional)
 
-1. Clone Repository
+1. enter repository
 
-
-git clone https://github.com/dyland0465/Student-life-hub.git
 cd Student-life-hub
 
 
 2. Configure Frontend
 
 cd frontend
-cp .env.example .env
-Edit .env with your Firebase credentials
+Create .env file:
+
+Frontend (.env)
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+VITE_API_URL=http://localhost:3001
 
 
 3. Configure Backend
 
+cd backend
+Create .env file:
 
-cd ../backend
-Create .env file (see backend/readme.md)
+Backend (.env)
+PORT=3001
+NODE_ENV=development
+FIREBASE_PROJECT_ID=...
+FIREBASE_CLIENT_EMAIL=...
+FIREBASE_PRIVATE_KEY="..."
+OPENAI_API_KEY=...
+FRONTEND_URL=http://localhost:5173
 
 
 Add Firebase Admin SDK credentials:
@@ -67,14 +82,12 @@ Add Firebase Admin SDK credentials:
 
 4. Start Application
 
-**Windows:**
-
+Windows:
 From project root
 start.bat
 
 
-**Manual start:**
-
+Manual start (Windows, MacOS, Linux):
 Terminal 1 - Backend
 cd backend
 npm install
@@ -87,98 +100,53 @@ npm run dev
 
 
 5. Open Application
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:3001
+- API Health: http://localhost:3001/api/health
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3001
-- **API Health**: http://localhost:3001/api/health
+
 
 
 Tech Stack
-
 Frontend
-- **Framework**: React 18
-- **Language**: TypeScript
-- **Build Tool**: Vite
-- **UI Library**: ShadCN UI
-- **Styling**: Tailwind CSS
-- **Routing**: React Router v6
-- **State**: React Context API
-- **Forms**: React Hook Form (implicit)
-- **Icons**: Lucide React
+- Framework: React 18
+- Language: TypeScript
+- Build Tool: Vite
+- UI Library: ShadCN UI
+- Styling: Tailwind CSS
 
 Backend
-- **Runtime**: Node.js
-- **Framework**: Express
-- **Language**: TypeScript
-- **Authentication**: Firebase Admin SDK
-- **AI**: OpenAI API
-- **Security**: Helmet, CORS, Rate Limiting
-- **Logging**: Morgan
+- Runtime: Node.js
+- Framework: Express
+- Language: TypeScript
+- Authentication: Firebase Admin SDK
+- AI: OpenAI API
 
 Services
-- **Authentication**: Firebase Auth
-- **Database**: Cloud Firestore
-- **AI**: OpenAI
-
-Documentation
-
-- **[Frontend README](frontend/README.md)** - Frontend setup and features
-- **[Backend README](backend/README.md)** - API documentation
-- **[SRS Document](SWENG411%20SRS%20Team%20X.pdf)** - Requirements specification
+- Authentication: Firebase Auth
+- Database: Cloud Firestore
+- AI: OpenAI
 
 API Endpoints
 
 Health Check
-```http
 GET /api/health
-```
+
 
 AI Endpoints
 
-**EZSolve Assignment**
-```http
+EZSolve Assignment
 POST /api/ai/solve-assignment
 Authorization: Bearer <token>
 Body: { "assignment": { "title": "...", "description": "..." } }
-```
 
-**Workout Recommendations**
-```http
+Workout Recommendations
 POST /api/ai/workout-recommendations
 Body: { "fitnessLevel": "beginner", "goals": [...] }
-```
 
-**Sleep Insights**
-```http
+Sleep Insights
 POST /api/ai/sleep-insights
 Body: { "averageHours": 7, "consistency": 85, "recentLogs": [...] }
-```
-
-See [Backend README](backend/README.md) for complete API documentation.
-
-Environment Variables
-
-Frontend (.env)
-```env
-VITE_FIREBASE_API_KEY=...
-VITE_FIREBASE_AUTH_DOMAIN=...
-VITE_FIREBASE_PROJECT_ID=...
-VITE_FIREBASE_STORAGE_BUCKET=...
-VITE_FIREBASE_MESSAGING_SENDER_ID=...
-VITE_FIREBASE_APP_ID=...
-VITE_API_URL=http://localhost:3001
-```
-
-Backend (.env)
-```env
-PORT=3001
-NODE_ENV=development
-FIREBASE_PROJECT_ID=...
-FIREBASE_CLIENT_EMAIL=...
-FIREBASE_PRIVATE_KEY="..."
-OPENAI_API_KEY=...
-FRONTEND_URL=http://localhost:5173
-```
 
 Features Roadmap
 
@@ -217,4 +185,3 @@ Known Issues
 License
 
 MIT License
----
