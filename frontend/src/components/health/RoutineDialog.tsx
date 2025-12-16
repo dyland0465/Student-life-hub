@@ -12,9 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/hooks/useAuth';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface RoutineDialogProps {
@@ -24,7 +22,6 @@ interface RoutineDialogProps {
 }
 
 export function RoutineDialog({ open, onOpenChange, onSave }: RoutineDialogProps) {
-  const { currentUser } = useAuth();
   const { toast } = useToast();
   const [routineName, setRoutineName] = useState('');
   const [type, setType] = useState('');
@@ -35,18 +32,14 @@ export function RoutineDialog({ open, onOpenChange, onSave }: RoutineDialogProps
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!currentUser) return;
-
     try {
       setLoading(true);
 
-      await addDoc(collection(db, 'fitnessRoutines'), {
-        userId: currentUser.uid,
+      await api.createRoutine({
         routineName,
         type,
         duration: parseInt(duration),
-        description,
-        createdAt: new Date(),
+        description: description.trim() || undefined,
       });
 
       toast({
@@ -60,11 +53,11 @@ export function RoutineDialog({ open, onOpenChange, onSave }: RoutineDialogProps
       setDescription('');
       onSave();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating routine:', error);
       toast({
         title: 'Error',
-        description: 'Failed to create routine',
+        description: error.message || 'Failed to create routine',
         variant: 'destructive',
       });
     } finally {

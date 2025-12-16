@@ -11,9 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import type { SleepSchedule } from '@/types';
-import { useAuth } from '@/hooks/useAuth';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface SleepScheduleDialogProps {
@@ -24,7 +22,6 @@ interface SleepScheduleDialogProps {
 }
 
 export function SleepScheduleDialog({ open, onOpenChange, schedule, onSave }: SleepScheduleDialogProps) {
-  const { currentUser } = useAuth();
   const { toast } = useToast();
   const [bedTime, setBedTime] = useState('');
   const [wakeTime, setWakeTime] = useState('');
@@ -55,16 +52,12 @@ export function SleepScheduleDialog({ open, onOpenChange, schedule, onSave }: Sl
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!currentUser) return;
-
     try {
       setLoading(true);
 
       const targetHours = calculateHours(bedTime, wakeTime);
 
-      await setDoc(doc(db, 'sleepSchedules', currentUser.uid), {
-        id: currentUser.uid,
-        userId: currentUser.uid,
+      await api.updateSleepSchedule({
         bedTime,
         wakeTime,
         targetHours,
@@ -77,11 +70,11 @@ export function SleepScheduleDialog({ open, onOpenChange, schedule, onSave }: Sl
 
       onSave();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving sleep schedule:', error);
       toast({
         title: 'Error',
-        description: 'Failed to save sleep schedule',
+        description: error.message || 'Failed to save sleep schedule',
         variant: 'destructive',
       });
     } finally {

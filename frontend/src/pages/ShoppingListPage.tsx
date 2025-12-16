@@ -3,12 +3,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, ShoppingCart, Sparkles } from 'lucide-react';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import type { ShoppingList, Meal } from '@/types';
 import { ShoppingListDialog } from '@/components/health/ShoppingListDialog';
 import { ShoppingListCard } from '@/components/health/ShoppingListCard';
 import { aiService } from '@/lib/ai-service';
+import { api } from '@/lib/api';
 
 export function ShoppingListPage() {
   const { currentUser } = useAuth();
@@ -32,40 +31,27 @@ export function ShoppingListPage() {
     if (!currentUser) return;
 
     try {
-      // Load shopping lists
-      const shoppingListsRef = collection(db, 'shoppingLists');
-      const shoppingListsQuery = query(
-        shoppingListsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('updatedAt', 'desc')
-      );
-      const shoppingListsSnapshot = await getDocs(shoppingListsQuery);
-      const loadedShoppingLists = shoppingListsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+      // Load shopping lists from API
+      const loadedShoppingLists = await api.getShoppingLists();
+      const listsWithDates = loadedShoppingLists.map((list: any) => ({
+        ...list,
+        createdAt: new Date(list.createdAt),
+        updatedAt: new Date(list.updatedAt),
       })) as ShoppingList[];
-      setShoppingLists(loadedShoppingLists);
+      setShoppingLists(listsWithDates);
 
-      // Load recent meals for AI suggestions
-      const mealsRef = collection(db, 'meals');
-      const mealsQuery = query(
-        mealsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('date', 'desc'),
-        limit(10)
-      );
-      const mealsSnapshot = await getDocs(mealsQuery);
-      const loadedMeals = mealsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        date: doc.data().date?.toDate() || new Date(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
+      // Load recent meals for AI suggestions from API
+      const loadedMeals = await api.getMeals(10);
+      const mealsWithDates = loadedMeals.map((meal: any) => ({
+        ...meal,
+        date: new Date(meal.date),
+        createdAt: new Date(meal.createdAt),
       })) as Meal[];
-      setMeals(loadedMeals);
+      setMeals(mealsWithDates);
     } catch (error) {
       console.error('Error loading shopping data:', error);
+      setShoppingLists([]);
+      setMeals([]);
     } finally {
       setLoading(false);
     }

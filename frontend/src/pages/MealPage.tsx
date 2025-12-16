@@ -4,12 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Plus, UtensilsCrossed, Sparkles } from 'lucide-react';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import type { Meal } from '@/types';
 import { MealDialog } from '@/components/health/MealDialog';
 import { MealCard } from '@/components/health/MealCard';
 import { aiService } from '@/lib/ai-service';
+import { api } from '@/lib/api';
 
 export function MealPage() {
   const { currentUser } = useAuth();
@@ -29,24 +28,18 @@ export function MealPage() {
     if (!currentUser) return;
 
     try {
-      // Load meals
-      const mealsRef = collection(db, 'meals');
-      const mealsQuery = query(
-        mealsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('date', 'desc'),
-        limit(50)
-      );
-      const mealsSnapshot = await getDocs(mealsQuery);
-      const loadedMeals = mealsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        date: doc.data().date?.toDate() || new Date(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
+      // Load meals from API
+      const loadedMeals = await api.getMeals(50);
+      // Ensure dates are Date objects
+      const mealsWithDates = loadedMeals.map((meal: any) => ({
+        ...meal,
+        date: new Date(meal.date),
+        createdAt: new Date(meal.createdAt),
       })) as Meal[];
-      setMeals(loadedMeals);
+      setMeals(mealsWithDates);
     } catch (error) {
       console.error('Error loading meal data:', error);
+      setMeals([]);
     } finally {
       setLoading(false);
     }

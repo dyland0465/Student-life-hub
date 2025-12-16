@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Edit, Trash2, ShoppingCart } from 'lucide-react';
 import { format } from 'date-fns';
-import { doc, deleteDoc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { ShoppingListDialog } from './ShoppingListDialog';
 import { Progress } from '@/components/ui/progress';
@@ -31,16 +30,15 @@ export function ShoppingListCard({ shoppingList, onUpdate }: ShoppingListCardPro
       setUpdating(true);
       const newItems = [...shoppingList.items];
       newItems[index] = { ...newItems[index], checked };
-      await updateDoc(doc(db, 'shoppingLists', shoppingList.id), {
+      await api.updateShoppingList(shoppingList.id, {
         items: newItems,
-        updatedAt: new Date(),
       });
       onUpdate();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating item:', error);
       toast({
         title: 'Error',
-        description: 'Failed to update item',
+        description: error.message || 'Failed to update item',
         variant: 'destructive',
       });
     } finally {
@@ -53,17 +51,17 @@ export function ShoppingListCard({ shoppingList, onUpdate }: ShoppingListCardPro
 
     try {
       setDeleting(true);
-      await deleteDoc(doc(db, 'shoppingLists', shoppingList.id));
+      await api.deleteShoppingList(shoppingList.id);
       toast({
         title: 'Success',
         description: 'Shopping list deleted successfully',
       });
       onUpdate();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting shopping list:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete shopping list',
+        description: error.message || 'Failed to delete shopping list',
         variant: 'destructive',
       });
     } finally {

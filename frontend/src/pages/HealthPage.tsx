@@ -16,6 +16,7 @@ import { MealCard } from '@/components/health/MealCard';
 import { ShoppingListDialog } from '@/components/health/ShoppingListDialog';
 import { ShoppingListCard } from '@/components/health/ShoppingListCard';
 import { aiService } from '@/lib/ai-service';
+import { api } from '@/lib/api';
 
 export function HealthPage() {
   const { currentUser } = useAuth();
@@ -45,6 +46,8 @@ export function HealthPage() {
   async function loadHealthData() {
     if (!currentUser) return;
 
+    console.log('loadHealthData() called');
+    
     try {
       // Load fitness routines
       const routinesRef = collection(db, 'fitnessRoutines');
@@ -58,53 +61,122 @@ export function HealthPage() {
       setRoutines(loadedRoutines);
 
       // Load workout logs
-      const logsRef = collection(db, 'workoutLogs');
-      const logsQuery = query(
-        logsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('date', 'desc'),
-        limit(20)
-      );
-      const logsSnapshot = await getDocs(logsQuery);
-      const loadedLogs = logsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        date: doc.data().date?.toDate() || new Date(),
-      })) as WorkoutLog[];
-      setWorkoutLogs(loadedLogs);
+      try {
+        const logsRef = collection(db, 'workoutLogs');
+        const logsQuery = query(
+          logsRef,
+          where('userId', '==', currentUser.uid),
+          orderBy('date', 'desc'),
+          limit(20)
+        );
+        const logsSnapshot = await getDocs(logsQuery);
+        const loadedLogs = logsSnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+          date: doc.data().date?.toDate() || new Date(),
+        })) as WorkoutLog[];
+        setWorkoutLogs(loadedLogs);
+      } catch (workoutError: any) {
+        console.error('Error loading workout logs with orderBy:', workoutError);
+        // If index is missing or query fails, try querying without orderBy and sort client-side
+        try {
+          const logsRef = collection(db, 'workoutLogs');
+          const logsQuery = query(
+            logsRef,
+            where('userId', '==', currentUser.uid)
+          );
+          const logsSnapshot = await getDocs(logsQuery);
+          const loadedLogs = logsSnapshot.docs.map((doc) => ({
+            ...doc.data(),
+            id: doc.id,
+            date: doc.data().date?.toDate() || new Date(),
+          })) as WorkoutLog[];
+          // Sort by date descending client-side
+          loadedLogs.sort((a, b) => b.date.getTime() - a.date.getTime());
+          setWorkoutLogs(loadedLogs.slice(0, 20));
+        } catch (fallbackError) {
+          console.error('Error loading workout logs (fallback also failed):', fallbackError);
+          setWorkoutLogs([]);
+        }
+      }
 
-      // Load meals
-      const mealsRef = collection(db, 'meals');
-      const mealsQuery = query(
-        mealsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('date', 'desc'),
-        limit(50)
-      );
-      const mealsSnapshot = await getDocs(mealsQuery);
-      const loadedMeals = mealsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        date: doc.data().date?.toDate() || new Date(),
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-      })) as Meal[];
-      setMeals(loadedMeals);
+      // Load meals from API
+      try {
+        const loadedMeals = await api.getMeals(50);
+        console.log('Loaded meals from API:', loadedMeals);
+        // Ensure dates are Date objects
+        const mealsWithDates = loadedMeals.map((meal: any) => ({
+          ...meal,
+          date: new Date(meal.date),
+          createdAt: new Date(meal.createdAt),
+        })) as Meal[];
+        console.log('Processed meals:', mealsWithDates);
+        setMeals(mealsWithDates);
+      } catch (mealError: any) {
+        console.error('Error loading meals:', mealError);
+        // If API fails, try to fall back to Firestore direct query
+        try {
+          const mealsRef = collection(db, 'meals');
+          const mealsQuery = query(
+            mealsRef,
+            where('userId', '==', currentUser.uid),
+            limit(50)
+          );
+          const mealsSnapshot = await getDocs(mealsQuery);
+          const loadedMeals = mealsSnapshot.docs.map((doc) => ({
+            ...doc.data(),
+            id: doc.id,
+            date: doc.data().date?.toDate() || new Date(),
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+          })) as Meal[];
+          console.log('Loaded meals from Firestore fallback:', loadedMeals);
+          setMeals(loadedMeals);
+        } catch (fallbackError) {
+          console.error('Firestore fallback also failed:', fallbackError);
+          setMeals([]);
+        }
+      }
 
       // Load shopping lists
-      const shoppingListsRef = collection(db, 'shoppingLists');
-      const shoppingListsQuery = query(
-        shoppingListsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('updatedAt', 'desc')
-      );
-      const shoppingListsSnapshot = await getDocs(shoppingListsQuery);
-      const loadedShoppingLists = shoppingListsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
-        updatedAt: doc.data().updatedAt?.toDate() || new Date(),
-      })) as ShoppingList[];
-      setShoppingLists(loadedShoppingLists);
+      try {
+        const shoppingListsRef = collection(db, 'shoppingLists');
+        const shoppingListsQuery = query(
+          shoppingListsRef,
+          where('userId', '==', currentUser.uid),
+          orderBy('updatedAt', 'desc')
+        );
+        const shoppingListsSnapshot = await getDocs(shoppingListsQuery);
+        const loadedShoppingLists = shoppingListsSnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+          createdAt: doc.data().createdAt?.toDate() || new Date(),
+          updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+        })) as ShoppingList[];
+        setShoppingLists(loadedShoppingLists);
+      } catch (shoppingListError: any) {
+        console.error('Error loading shopping lists with orderBy:', shoppingListError);
+        // If index is missing or query fails, try querying without orderBy and sort client-side
+        try {
+          const shoppingListsRef = collection(db, 'shoppingLists');
+          const shoppingListsQuery = query(
+            shoppingListsRef,
+            where('userId', '==', currentUser.uid)
+          );
+          const shoppingListsSnapshot = await getDocs(shoppingListsQuery);
+          const loadedShoppingLists = shoppingListsSnapshot.docs.map((doc) => ({
+            ...doc.data(),
+            id: doc.id,
+            createdAt: doc.data().createdAt?.toDate() || new Date(),
+            updatedAt: doc.data().updatedAt?.toDate() || new Date(),
+          })) as ShoppingList[];
+          // Sort by updatedAt descending client-side
+          loadedShoppingLists.sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime());
+          setShoppingLists(loadedShoppingLists);
+        } catch (fallbackError) {
+          console.error('Error loading shopping lists (fallback also failed):', fallbackError);
+          setShoppingLists([]);
+        }
+      }
     } catch (error) {
       console.error('Error loading health data:', error);
     } finally {

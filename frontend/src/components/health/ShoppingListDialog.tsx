@@ -12,9 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
 import type { ShoppingList, ShoppingListItem } from '@/types';
-import { useAuth } from '@/hooks/useAuth';
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface ShoppingListDialogProps {
@@ -25,7 +23,6 @@ interface ShoppingListDialogProps {
 }
 
 export function ShoppingListDialog({ open, onOpenChange, shoppingList, onSave }: ShoppingListDialogProps) {
-  const { currentUser } = useAuth();
   const { toast } = useToast();
   const [name, setName] = useState(shoppingList?.name || '');
   const [items, setItems] = useState<ShoppingListItem[]>(
@@ -60,8 +57,6 @@ export function ShoppingListDialog({ open, onOpenChange, shoppingList, onSave }:
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!currentUser) return;
-
     // Filter out empty items
     const validItems = items.filter((item) => item.name.trim() !== '');
 
@@ -77,26 +72,21 @@ export function ShoppingListDialog({ open, onOpenChange, shoppingList, onSave }:
     try {
       setLoading(true);
 
-      const listData = {
-        userId: currentUser.uid,
-        name: name.trim(),
-        items: validItems,
-        updatedAt: new Date(),
-        ...(shoppingList ? {} : { createdAt: new Date() }),
-      };
-
       if (shoppingList) {
         // Update existing list
-        await updateDoc(doc(db, 'shoppingLists', shoppingList.id), listData);
+        await api.updateShoppingList(shoppingList.id, {
+          name: name.trim(),
+          items: validItems,
+        });
         toast({
           title: 'Success',
           description: 'Shopping list updated successfully',
         });
       } else {
         // Create new list
-        await addDoc(collection(db, 'shoppingLists'), {
-          ...listData,
-          createdAt: new Date(),
+        await api.createShoppingList({
+          name: name.trim(),
+          items: validItems,
         });
         toast({
           title: 'Success',
@@ -109,11 +99,11 @@ export function ShoppingListDialog({ open, onOpenChange, shoppingList, onSave }:
       setItems([{ name: '', quantity: '', checked: false }]);
       onSave();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving shopping list:', error);
       toast({
         title: 'Error',
-        description: shoppingList ? 'Failed to update shopping list' : 'Failed to create shopping list',
+        description: error.message || (shoppingList ? 'Failed to update shopping list' : 'Failed to create shopping list'),
         variant: 'destructive',
       });
     } finally {

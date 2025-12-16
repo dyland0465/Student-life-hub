@@ -12,9 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useAuth } from '@/hooks/useAuth';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface SleepLogDialogProps {
@@ -24,7 +22,6 @@ interface SleepLogDialogProps {
 }
 
 export function SleepLogDialog({ open, onOpenChange, onSave }: SleepLogDialogProps) {
-  const { currentUser } = useAuth();
   const { toast } = useToast();
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [bedTime, setBedTime] = useState('');
@@ -48,21 +45,18 @@ export function SleepLogDialog({ open, onOpenChange, onSave }: SleepLogDialogPro
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!currentUser) return;
-
     try {
       setLoading(true);
 
       const actualHours = calculateHours(bedTime, wakeTime);
 
-      await addDoc(collection(db, 'sleepLogs'), {
-        userId: currentUser.uid,
-        date: new Date(date),
+      await api.createSleepLog({
+        date: new Date(date).toISOString(),
         bedTime,
         wakeTime,
         actualHours,
-        quality: quality || null,
-        notes,
+        quality: quality ? quality as 'poor' | 'fair' | 'good' | 'excellent' : undefined,
+        notes: notes.trim() || undefined,
       });
 
       toast({
@@ -77,11 +71,11 @@ export function SleepLogDialog({ open, onOpenChange, onSave }: SleepLogDialogPro
       setNotes('');
       onSave();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error logging sleep:', error);
       toast({
         title: 'Error',
-        description: 'Failed to log sleep',
+        description: error.message || 'Failed to log sleep',
         variant: 'destructive',
       });
     } finally {

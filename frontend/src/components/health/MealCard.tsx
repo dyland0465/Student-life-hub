@@ -5,8 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { UtensilsCrossed, Edit, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
-import { doc, deleteDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 import { MealDialog } from './MealDialog';
 
@@ -32,17 +31,17 @@ export function MealCard({ meal, onUpdate }: MealCardProps) {
 
     try {
       setDeleting(true);
-      await deleteDoc(doc(db, 'meals', meal.id));
+      await api.deleteMeal(meal.id);
       toast({
         title: 'Success',
         description: 'Meal deleted successfully',
       });
       onUpdate();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting meal:', error);
       toast({
         title: 'Error',
-        description: 'Failed to delete meal',
+        description: error.message || 'Failed to delete meal',
         variant: 'destructive',
       });
     } finally {

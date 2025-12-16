@@ -44,6 +44,11 @@ async function apiRequest(endpoint: string, options: RequestInit = {}) {
       throw new Error(error.error || `HTTP ${response.status}`);
     }
 
+    // Handle 204 No Content responses
+    if (response.status === 204) {
+      return null;
+    }
+
     return response.json();
   } catch (error: any) {
     // Handle network errors (backend not running, CORS, etc.)
@@ -424,6 +429,181 @@ export const api = {
     return apiRequest(endpoint, {
       method: 'POST',
       body: JSON.stringify({ service }),
+    });
+  },
+
+  /**
+   * Meal tracking functionality
+   */
+  async getMeals(limit?: number) {
+    const params = limit ? `?limit=${limit}` : '';
+    return apiRequest(`/api/health/meals${params}`);
+  },
+
+  async createMeal(meal: {
+    mealType: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
+    foodName: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fats: number;
+    date: string | Date;
+    notes?: string;
+  }) {
+    return apiRequest('/api/health/meals', {
+      method: 'POST',
+      body: JSON.stringify(meal),
+    });
+  },
+
+  async updateMeal(mealId: string, meal: {
+    mealType?: 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
+    foodName?: string;
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fats?: number;
+    date?: string | Date;
+    notes?: string;
+  }) {
+    return apiRequest(`/api/health/meals/${mealId}`, {
+      method: 'PUT',
+      body: JSON.stringify(meal),
+    });
+  },
+
+  async deleteMeal(mealId: string) {
+    return apiRequest(`/api/health/meals/${mealId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * Workout tracking functionality
+   */
+  async getWorkouts(limit?: number) {
+    const params = limit ? `?limit=${limit}` : '';
+    return apiRequest(`/api/health/workouts${params}`);
+  },
+
+  async createWorkout(workout: {
+    routineId?: string | null;
+    routineName: string;
+    type: string;
+    duration: number;
+    date: string | Date;
+    notes?: string;
+  }) {
+    return apiRequest('/api/health/workouts', {
+      method: 'POST',
+      body: JSON.stringify(workout),
+    });
+  },
+
+  async deleteWorkout(workoutId: string) {
+    return apiRequest(`/api/health/workouts/${workoutId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * Fitness routine functionality
+   */
+  async getRoutines() {
+    return apiRequest('/api/health/routines');
+  },
+
+  async createRoutine(routine: {
+    routineName: string;
+    type: string;
+    duration: number;
+    description?: string;
+  }) {
+    return apiRequest('/api/health/routines', {
+      method: 'POST',
+      body: JSON.stringify(routine),
+    });
+  },
+
+  async deleteRoutine(routineId: string) {
+    return apiRequest(`/api/health/routines/${routineId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * Shopping list functionality
+   */
+  async getShoppingLists() {
+    return apiRequest('/api/health/shopping-lists');
+  },
+
+  async createShoppingList(list: {
+    name: string;
+    items?: Array<{ name: string; quantity: string; checked: boolean }>;
+  }) {
+    return apiRequest('/api/health/shopping-lists', {
+      method: 'POST',
+      body: JSON.stringify(list),
+    });
+  },
+
+  async updateShoppingList(listId: string, list: {
+    name?: string;
+    items?: Array<{ name: string; quantity: string; checked: boolean }>;
+  }) {
+    return apiRequest(`/api/health/shopping-lists/${listId}`, {
+      method: 'PUT',
+      body: JSON.stringify(list),
+    });
+  },
+
+  async deleteShoppingList(listId: string) {
+    return apiRequest(`/api/health/shopping-lists/${listId}`, {
+      method: 'DELETE',
+    });
+  },
+
+  /**
+   * Sleep tracking functionality
+   */
+  async getSleepSchedule() {
+    return apiRequest('/api/health/sleep-schedule');
+  },
+
+  async updateSleepSchedule(schedule: {
+    bedTime: string;
+    wakeTime: string;
+    targetHours: number;
+  }) {
+    return apiRequest('/api/health/sleep-schedule', {
+      method: 'PUT',
+      body: JSON.stringify(schedule),
+    });
+  },
+
+  async getSleepLogs(limit?: number) {
+    const params = limit ? `?limit=${limit}` : '';
+    return apiRequest(`/api/health/sleep-logs${params}`);
+  },
+
+  async createSleepLog(log: {
+    date: string | Date;
+    bedTime: string;
+    wakeTime: string;
+    actualHours: number;
+    quality?: 'poor' | 'fair' | 'good' | 'excellent';
+    notes?: string;
+  }) {
+    return apiRequest('/api/health/sleep-logs', {
+      method: 'POST',
+      body: JSON.stringify(log),
+    });
+  },
+
+  async deleteSleepLog(logId: string) {
+    return apiRequest(`/api/health/sleep-logs/${logId}`, {
+      method: 'DELETE',
     });
   },
 };

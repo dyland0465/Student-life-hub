@@ -13,9 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { Meal } from '@/types';
-import { useAuth } from '@/hooks/useAuth';
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface MealDialogProps {
@@ -26,7 +24,6 @@ interface MealDialogProps {
 }
 
 export function MealDialog({ open, onOpenChange, meal, onSave }: MealDialogProps) {
-  const { currentUser } = useAuth();
   const { toast } = useToast();
   const [mealType, setMealType] = useState<Meal['mealType']>(meal?.mealType || 'Breakfast');
   const [foodName, setFoodName] = useState(meal?.foodName || '');
@@ -43,34 +40,34 @@ export function MealDialog({ open, onOpenChange, meal, onSave }: MealDialogProps
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!currentUser) return;
-
     try {
       setLoading(true);
 
       const mealData = {
-        userId: currentUser.uid,
         mealType,
         foodName,
         calories: parseFloat(calories) || 0,
         protein: parseFloat(protein) || 0,
         carbs: parseFloat(carbs) || 0,
         fats: parseFloat(fats) || 0,
-        date: new Date(date),
-        notes: notes || null,
-        createdAt: meal?.createdAt || new Date(),
+        date: new Date(date).toISOString(),
+        notes: notes.trim() || undefined,
       };
+
+      console.log('Submitting meal data:', mealData);
 
       if (meal) {
         // Update existing meal
-        await updateDoc(doc(db, 'meals', meal.id), mealData);
+        const result = await api.updateMeal(meal.id, mealData);
+        console.log('Meal updated, result:', result);
         toast({
           title: 'Success',
           description: 'Meal updated successfully',
         });
       } else {
         // Create new meal
-        await addDoc(collection(db, 'meals'), mealData);
+        const result = await api.createMeal(mealData);
+        console.log('Meal created, result:', result);
         toast({
           title: 'Success',
           description: 'Meal logged successfully',
@@ -86,13 +83,15 @@ export function MealDialog({ open, onOpenChange, meal, onSave }: MealDialogProps
       setFats('');
       setDate(new Date().toISOString().slice(0, 16));
       setNotes('');
+      
+      console.log('Calling onSave() to reload meals...');
       onSave();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving meal:', error);
       toast({
         title: 'Error',
-        description: meal ? 'Failed to update meal' : 'Failed to log meal',
+        description: error.message || (meal ? 'Failed to update meal' : 'Failed to log meal'),
         variant: 'destructive',
       });
     } finally {

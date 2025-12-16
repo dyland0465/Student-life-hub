@@ -13,9 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { FitnessRoutine } from '@/types';
-import { useAuth } from '@/hooks/useAuth';
-import { collection, addDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { api } from '@/lib/api';
 import { useToast } from '@/hooks/use-toast';
 
 interface WorkoutDialogProps {
@@ -26,7 +24,6 @@ interface WorkoutDialogProps {
 }
 
 export function WorkoutDialog({ open, onOpenChange, routines, onSave }: WorkoutDialogProps) {
-  const { currentUser } = useAuth();
   const { toast } = useToast();
   const [selectedRoutine, setSelectedRoutine] = useState('');
   const [customName, setCustomName] = useState('');
@@ -55,19 +52,16 @@ export function WorkoutDialog({ open, onOpenChange, routines, onSave }: WorkoutD
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
-    if (!currentUser) return;
-
     try {
       setLoading(true);
 
-      await addDoc(collection(db, 'workoutLogs'), {
-        userId: currentUser.uid,
+      await api.createWorkout({
         routineId: selectedRoutine === 'custom' ? null : selectedRoutine,
         routineName: customName,
         type,
         duration: parseInt(duration),
-        date: new Date(date),
-        notes,
+        date: new Date(date).toISOString(),
+        notes: notes.trim() || undefined,
       });
 
       toast({
@@ -82,11 +76,11 @@ export function WorkoutDialog({ open, onOpenChange, routines, onSave }: WorkoutD
       setNotes('');
       onSave();
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error logging workout:', error);
       toast({
         title: 'Error',
-        description: 'Failed to log workout',
+        description: error.message || 'Failed to log workout',
         variant: 'destructive',
       });
     } finally {

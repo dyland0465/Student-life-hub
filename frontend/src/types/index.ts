@@ -49,7 +49,7 @@ export interface FitnessRoutine {
 export interface WorkoutLog {
   id: string;
   userId: string;
-  routineId: string;
+  routineId: string | null;
   routineName: string;
   duration: number;
   type: string;

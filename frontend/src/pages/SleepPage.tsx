@@ -3,12 +3,11 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Moon, TrendingUp, Sparkles } from 'lucide-react';
-import { collection, query, where, getDocs, orderBy, limit, getDoc, doc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import type { SleepLog, SleepSchedule } from '@/types';
 import { SleepLogDialog } from '@/components/sleep/SleepLogDialog';
 import { SleepScheduleDialog } from '@/components/sleep/SleepScheduleDialog';
 import { SleepLogCard } from '@/components/sleep/SleepLogCard';
+import { api } from '@/lib/api';
 
 export function SleepPage() {
   const { currentUser } = useAuth();
@@ -28,29 +27,25 @@ export function SleepPage() {
     if (!currentUser) return;
 
     try {
-      // Load sleep schedule
-      const scheduleDoc = await getDoc(doc(db, 'sleepSchedules', currentUser.uid));
-      if (scheduleDoc.exists()) {
-        setSleepSchedule(scheduleDoc.data() as SleepSchedule);
+      // Load sleep schedule from API
+      const schedule = await api.getSleepSchedule();
+      if (schedule) {
+        setSleepSchedule(schedule as SleepSchedule);
+      } else {
+        setSleepSchedule(null);
       }
 
-      // Load sleep logs
-      const logsRef = collection(db, 'sleepLogs');
-      const logsQuery = query(
-        logsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('date', 'desc'),
-        limit(30)
-      );
-      const logsSnapshot = await getDocs(logsQuery);
-      const loadedLogs = logsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        date: doc.data().date?.toDate() || new Date(),
+      // Load sleep logs from API
+      const loadedLogs = await api.getSleepLogs(30);
+      const logsWithDates = loadedLogs.map((log: any) => ({
+        ...log,
+        date: new Date(log.date),
       })) as SleepLog[];
-      setSleepLogs(loadedLogs);
+      setSleepLogs(logsWithDates);
     } catch (error) {
       console.error('Error loading sleep data:', error);
+      setSleepSchedule(null);
+      setSleepLogs([]);
     } finally {
       setLoading(false);
     }

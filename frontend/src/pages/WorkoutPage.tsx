@@ -3,13 +3,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus, Dumbbell, TrendingUp, Sparkles } from 'lucide-react';
-import { collection, query, where, getDocs, orderBy, limit } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import type { FitnessRoutine, WorkoutLog } from '@/types';
 import { RoutineDialog } from '@/components/health/RoutineDialog';
 import { WorkoutDialog } from '@/components/health/WorkoutDialog';
 import { WorkoutCard } from '@/components/health/WorkoutCard';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { api } from '@/lib/api';
 
 export function WorkoutPage() {
   const { currentUser } = useAuth();
@@ -29,34 +28,25 @@ export function WorkoutPage() {
     if (!currentUser) return;
 
     try {
-      // Load fitness routines
-      const routinesRef = collection(db, 'fitnessRoutines');
-      const routinesQuery = query(routinesRef, where('userId', '==', currentUser.uid));
-      const routinesSnapshot = await getDocs(routinesQuery);
-      const loadedRoutines = routinesSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        createdAt: doc.data().createdAt?.toDate() || new Date(),
+      // Load fitness routines from API
+      const loadedRoutines = await api.getRoutines();
+      const routinesWithDates = loadedRoutines.map((routine: any) => ({
+        ...routine,
+        createdAt: new Date(routine.createdAt),
       })) as FitnessRoutine[];
-      setRoutines(loadedRoutines);
+      setRoutines(routinesWithDates);
 
-      // Load workout logs
-      const logsRef = collection(db, 'workoutLogs');
-      const logsQuery = query(
-        logsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('date', 'desc'),
-        limit(20)
-      );
-      const logsSnapshot = await getDocs(logsQuery);
-      const loadedLogs = logsSnapshot.docs.map((doc) => ({
-        ...doc.data(),
-        id: doc.id,
-        date: doc.data().date?.toDate() || new Date(),
+      // Load workout logs from API
+      const loadedLogs = await api.getWorkouts(20);
+      const logsWithDates = loadedLogs.map((log: any) => ({
+        ...log,
+        date: new Date(log.date),
       })) as WorkoutLog[];
-      setWorkoutLogs(loadedLogs);
+      setWorkoutLogs(logsWithDates);
     } catch (error) {
       console.error('Error loading health data:', error);
+      setRoutines([]);
+      setWorkoutLogs([]);
     } finally {
       setLoading(false);
     }
